@@ -1,0 +1,26 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trinetra-web
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  # Production frontend:
+  # docker compose --profile production up --build
+  web-prod:
+    profiles: ["production"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prod
+    container_name: trinetra-web-prod
+    ports:
+      - "8080:80"
+    restart: unless-stopped
