@@ -1,4 +1,4 @@
-const CACHE = "sarv-shell-v2";
+const CACHE = "sarv-shell-v10";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/brand/sarv-logo.png"];
 
 self.addEventListener("install", event => {

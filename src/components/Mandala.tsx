@@ -1,3 +1,5 @@
+import { SarvLogo } from "./SarvLogo";
+
 export function Mandala() {
   return (
     <div className="mandala-wrap" aria-label="Sarv security architecture">
@@ -7,7 +9,11 @@ export function Mandala() {
       <div className="mandala-ring r3" />
       <div className="mandala-cross c1" />
       <div className="mandala-cross c2" />
-      <div className="mandala-core">ॐ</div>
+
+      <div className="mandala-core">
+        <SarvLogo className="mandala-logo" decorative />
+      </div>
+
       <span className="mandala-label l1">IDENTIFY</span>
       <span className="mandala-label l2">PROTECT</span>
       <span className="mandala-label l3">DETECT</span>

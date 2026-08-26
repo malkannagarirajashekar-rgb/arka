@@ -93,7 +93,7 @@ export default function Home() {
 
         <motion.section className="onboarding-strip section-shell" {...fadeUp}>
           <div>
-            <p className="eyebrow"><span /> NEW TO SARV</p>
+            <p className="eyebrow"><span /> NEW TO Sarv</p>
             <h2>Start with a secure identity.</h2>
             <p>Create your account now. Organization access can be assigned later by an authorized administrator.</p>
           </div>

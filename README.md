@@ -189,3 +189,10 @@ Docker container names are:
 - `sarv-web-prod`
 
 If the company/product name changes again, update visible branding, Docker container names, PWA cache/name, Capacitor `appName`, package name where appropriate, and the Supabase project display name. The Supabase project Reference ID/API URL is a separate identifier and should not be changed casually.
+
+
+### Logo rendering
+
+`public/brand/sarv-logo.png` is intentionally kept as the original supplied artwork.
+The UI removes its white/black rectangular background at render time using CSS
+`invert()` + `mix-blend-mode: screen`; no replacement or generated logo image is used.

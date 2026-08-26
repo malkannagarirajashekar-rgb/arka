@@ -1,16 +1,12 @@
 import { Link } from "react-router-dom";
+import { SarvLogo } from "./SarvLogo";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link className={`brand ${compact ? "brand-compact" : ""}`} to="/" aria-label="Sarv home">
-      <img
-        className="brand-mark"
-        src="/brand/sarv-logo.png"
-        alt="Sarv"
-        draggable="false"
-      />
+      <SarvLogo className="brand-mark" decorative />
       <span className="brand-wordmark">
-        <strong>SARV</strong>
+        <strong>Sarv</strong>
         {!compact && <small>CYBER DEFENSE</small>}
       </span>
     </Link>
