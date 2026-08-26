@@ -81,7 +81,7 @@ input,select,textarea{font-size:16px;max-width:100%}
 
 .access-error-card{max-width:620px}.access-error-card h1{font:500 40px "Playfair Display",serif;margin:10px 0}.access-error-card p:not(.eyebrow){color:var(--muted);font-size:11px}.error-actions{display:flex;justify-content:center;gap:10px;margin-top:22px}
 
-/* Official geometric Trinetra mark */
+/* Official geometric Sarv mark */
 .brand{display:inline-flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);width:max-content;min-height:44px}
 .brand-mark{width:34px;height:34px;display:block;object-fit:contain;object-position:center;filter:var(--logo-filter);flex-shrink:0}
 .brand-wordmark{display:flex;flex-direction:column;justify-content:center;line-height:1}
@@ -95,3 +95,7 @@ input,select,textarea{font-size:16px;max-width:100%}
 :root{--logo-filter:none}
 [data-theme="dark"]{--logo-filter:invert(1) brightness(1.05)}
 @media(max-width:600px){.brand-mark{width:32px;height:32px}.brand-wordmark strong{font-size:12px}}
+
+.mandala-core{display:grid!important;place-items:center!important;overflow:hidden}
+.mandala-core img{width:48%;height:48%;object-fit:contain;filter:var(--logo-filter);display:block}
+@media(max-width:600px){.mandala-core img{width:46%;height:46%}}

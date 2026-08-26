@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: trinetra-web
+    container_name: sarv-web
     ports:
       - "5173:5173"
     env_file:
@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.prod
-    container_name: trinetra-web-prod
+    container_name: sarv-web-prod
     ports:
       - "8080:80"
     restart: unless-stopped

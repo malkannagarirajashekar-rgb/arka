@@ -1,5 +1,5 @@
 {
-  "name": "trinetra-platform",
+  "name": "sarv-platform",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "e2e": "playwright test",
-    "cap:init": "cap init Trinetra com.trinetra.platform --web-dir dist",
+    "cap:init": "cap init Sarv com.sarv.platform --web-dir dist",
     "cap:sync": "npm run build && cap sync"
   },
   "dependencies": {

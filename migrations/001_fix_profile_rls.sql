@@ -1,4 +1,4 @@
--- Trinetra migration 001
+-- Sarv migration 001
 -- Fix profile authorization policy recursion.
 -- The frontend only needs to read the currently authenticated user's profile.
 -- Super Admin privilege is checked by the application AND should be enforced

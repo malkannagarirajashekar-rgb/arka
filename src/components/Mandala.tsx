@@ -1,6 +1,6 @@
 export function Mandala() {
   return (
-    <div className="mandala-wrap" aria-label="Trinetra security architecture">
+    <div className="mandala-wrap" aria-label="Sarv security architecture">
       <div className="mandala-grid" />
       <div className="mandala-ring r1" />
       <div className="mandala-ring r2" />

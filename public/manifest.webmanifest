@@ -1,6 +1,6 @@
 {
-  "name": "Trinetra Cyber Defense",
-  "short_name": "Trinetra",
+  "name": "Sarv Cyber Defense",
+  "short_name": "Sarv",
   "description": "Secure, centralized administration for modern organizations.",
   "start_url": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/brand/trinetra-logo.png",
+      "src": "/brand/sarv-logo.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"

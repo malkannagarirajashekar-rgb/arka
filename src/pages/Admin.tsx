@@ -61,7 +61,7 @@ export default function Admin() {
         if (mounted) {
           setChecking(false);
           setAccessError(
-            `Authentication succeeded, but Trinetra could not read your profile. ${profileError.message}`
+            `Authentication succeeded, but Sarv could not read your profile. ${profileError.message}`
           );
         }
         return;
@@ -71,7 +71,7 @@ export default function Admin() {
         if (mounted) {
           setChecking(false);
           setAccessError(
-            "Authentication succeeded, but no Trinetra profile exists for this account."
+            "Authentication succeeded, but no Sarv profile exists for this account."
           );
         }
         return;
@@ -282,7 +282,7 @@ export default function Admin() {
             <div>
               <p className="eyebrow"><span /> ACCESS VERIFIED</p>
               <h2>Super Admin privileges confirmed.</h2>
-              <p>Your session is authenticated through Supabase and your Trinetra role is verified against the protected <code>profiles</code> table.</p>
+              <p>Your session is authenticated through Supabase and your Sarv role is verified against the protected <code>profiles</code> table.</p>
             </div>
           </section>
         </div>

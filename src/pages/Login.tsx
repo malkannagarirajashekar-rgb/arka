@@ -122,7 +122,7 @@ export default function Login() {
 
   return (
     <main className="auth">
-      <Link className="back-link" to="/"><ArrowLeft size={14}/> Back to Trinetra</Link>
+      <Link className="back-link" to="/"><ArrowLeft size={14}/> Back to Sarv</Link>
 
       <div className="auth-brand">
         <Brand />

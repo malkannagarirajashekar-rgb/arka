@@ -1,5 +1,5 @@
-const CACHE = "trinetra-shell-v1";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/brand/trinetra-logo.png"];
+const CACHE = "sarv-shell-v2";
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/brand/sarv-logo.png"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
