@@ -81,278 +81,115 @@ input,select,textarea{font-size:16px;max-width:100%}
 
 .access-error-card{max-width:620px}.access-error-card h1{font:500 40px "Playfair Display",serif;margin:10px 0}.access-error-card p:not(.eyebrow){color:var(--muted);font-size:11px}.error-actions{display:flex;justify-content:center;gap:10px;margin-top:22px}
 
-/* Official geometric Sarv mark */
-.brand{display:inline-flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);width:max-content;min-height:44px}
-.brand-mark{width:34px;height:34px;display:block;object-fit:contain;object-position:center;filter:var(--logo-filter);flex-shrink:0}
+/* ============================================================
+   SARV BRAND + MANDALA
+   One vector treatment for every theme. The logo is an alpha mask,
+   so its linework inherits --gold instead of carrying a baked-in
+   white/black background.
+   ============================================================ */
+.brand{display:inline-flex;align-items:center;gap:14px;text-decoration:none;color:var(--text);width:max-content;min-height:44px}
+.brand-mark{
+  width:62px;height:62px;display:block;flex:0 0 auto;
+  /* Keep the Sarv mark upright. The legacy 45deg transform is intentionally overridden here. */
+  transform:none;
+  rotate:none;
+  background:var(--gold);
+  -webkit-mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+  mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+}
 .brand-wordmark{display:flex;flex-direction:column;justify-content:center;line-height:1}
-.brand-wordmark strong{font-size:13px;letter-spacing:.22em;font-weight:650}
+.brand-wordmark strong{font-size:13px;letter-spacing:.18em;font-weight:650}
 .brand-wordmark small{font-size:6px;letter-spacing:.28em;color:var(--muted);margin-top:6px}
-.brand-compact .brand-mark{width:30px;height:30px}
-.brand-compact .brand-wordmark small{display:none}
-.auth-brand .brand-mark{width:42px;height:42px}
-.auth-brand .brand-wordmark strong{font-size:15px}
-.sidebar .brand-mark{width:38px;height:38px}
-:root{--logo-filter:none}
-[data-theme="dark"]{--logo-filter:invert(1) brightness(1.05)}
-@media(max-width:600px){.brand-mark{width:32px;height:32px}.brand-wordmark strong{font-size:12px}}
+.brand-compact .brand-mark{width:46px;height:46px}
+.auth-brand .brand-mark{width:54px;height:54px}
+.sidebar .brand-mark{width:46px;height:46px}
 
-.mandala-core{display:grid!important;place-items:center!important;overflow:hidden}
-.mandala-core img{width:48%;height:48%;object-fit:contain;filter:var(--logo-filter);display:block}
-@media(max-width:600px){.mandala-core img{width:46%;height:46%}}
-
-/* ============================================================
-   Sarv BRAND MARK — use the supplied geometric logo as-is.
-   Do not rotate it, crop it, or wrap it in the old diamond.
-   ============================================================ */
-.brand-mark{
-  width:68px!important;
-  height:68px!important;
-  display:block!important;
-  object-fit:contain!important;
-  object-position:center!important;
-  border:0!important;
-  transform:none!important;
-  background:transparent!important;
-  color:inherit!important;
-  filter:var(--logo-filter)!important;
+/* The radar and the Sarv mark now share exactly the same gold variable. */
+.mandala-wrap{
+  --mandala-gold:var(--gold);
+  --orbit-radius:215px;
+  --mandala-faint:color-mix(in srgb,var(--gold) 24%,transparent);
+  --mandala-soft:color-mix(in srgb,var(--gold) 10%,transparent);
+  width:min(520px,82vw);aspect-ratio:1;position:relative;display:grid;place-items:center;
 }
-.brand-wordmark strong{
-  text-transform:none!important;
-  letter-spacing:.18em!important;
+.mandala-grid{
+  position:absolute;inset:4%;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 35px,color-mix(in srgb,var(--gold) 4%,transparent) 36px),
+    repeating-linear-gradient(90deg,transparent 0 35px,color-mix(in srgb,var(--gold) 4%,transparent) 36px);
+  -webkit-mask-image:radial-gradient(circle,#000,transparent 72%);
+  mask-image:radial-gradient(circle,#000,transparent 72%);
 }
-.public-nav .brand{gap:14px!important}
-.public-nav .brand-mark{width:64px!important;height:64px!important}
-.sidebar .brand-mark{width:54px!important;height:54px!important}
-.auth-brand .brand-mark{width:62px!important;height:62px!important}
+.mandala-ring{
+  position:absolute;border:1px solid var(--mandala-faint);border-radius:50%;
+  inset:4%;animation:mandalaSpin 38s linear infinite;
+}
+.mandala-ring.r2{inset:18%;border-style:dashed;animation-direction:reverse;animation-duration:30s}
+.mandala-ring.r3{inset:31%;border-color:color-mix(in srgb,var(--gold) 70%,transparent);animation-duration:24s}
+.mandala-cross{
+  position:absolute;width:88%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--mandala-soft),transparent);
+  transform:rotate(45deg);
+}
+.mandala-cross.c2{transform:rotate(-45deg)}
 
-/* The actual supplied Sarv geometry is the center of the animated security radar. */
+/* A restrained sweep makes the centre feel like part of the radar,
+   rather than a logo pasted on top of it. */
+.mandala-sweep{
+  position:absolute;width:44%;height:44%;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg,transparent 292deg,color-mix(in srgb,var(--gold) 18%,transparent) 336deg,transparent 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 63%,#000 64% 65%,transparent 66%);
+  mask:radial-gradient(circle,transparent 0 63%,#000 64% 65%,transparent 66%);
+  animation:mandalaSweep 8s linear infinite;pointer-events:none;
+}
 .mandala-core{
-  display:grid!important;
-  place-items:center!important;
-  overflow:hidden!important;
+  width:132px;height:132px;position:relative;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--gold) 76%,transparent);
+  border-radius:50%;background:transparent;box-shadow:0 0 0 9px color-mix(in srgb,var(--gold) 3%,transparent);
+  animation:mandalaPulse 4s ease-in-out infinite;z-index:5;
 }
-.mandala-core img{
-  width:62%!important;
-  height:62%!important;
-  max-width:none!important;
-  object-fit:contain!important;
-  object-position:center!important;
-  display:block!important;
-  border:0!important;
-  transform:none!important;
-  filter:var(--logo-filter)!important;
+.mandala-core::before,.mandala-core::after{
+  content:"";position:absolute;inset:13px;border:1px solid color-mix(in srgb,var(--gold) 13%,transparent);
+  border-radius:50%;pointer-events:none;
 }
+.mandala-core::after{inset:0;border-color:color-mix(in srgb,var(--gold) 24%,transparent);border-style:dashed;animation:mandalaCoreSpin 18s linear infinite}
+.mandala-logo{
+  width:92px;height:92px;display:block;position:relative;z-index:2;
+  background:var(--mandala-gold);
+  -webkit-mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+  mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+}
+.mandala-label{position:absolute;font-size:9px;letter-spacing:.16em;color:var(--gold);font-weight:500}
+.mandala-label.l1{top:1%}.mandala-label.l2{right:0;top:48%}.mandala-label.l3{bottom:1%;right:19%}.mandala-label.l4{bottom:1%;left:19%}
+.signal{position:absolute;width:6px;height:6px;background:var(--saffron);border-radius:50%;box-shadow:0 0 16px color-mix(in srgb,var(--saffron) 70%,transparent);animation:mandalaOrbit 9s linear infinite}
+.signal.s1{animation-delay:-1s}.signal.s2{animation-delay:-4s}.signal.s3{animation-delay:-7s}
+@keyframes mandalaSpin{to{transform:rotate(360deg)}}
+@keyframes mandalaCoreSpin{to{transform:rotate(360deg)}}
+@keyframes mandalaSweep{to{transform:rotate(360deg)}}
+@keyframes mandalaPulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--gold) 4%,transparent),0 0 38px color-mix(in srgb,var(--gold) 8%,transparent)}}
+@keyframes mandalaOrbit{from{transform:rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg)}}
+
+/* Auth orbit uses the exact same mark treatment. */
+.auth-orbit-logo{
+  width:82px;height:82px;display:block;background:var(--gold);
+  -webkit-mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+  mask:url("/brand/sarv-logo.svg") center/contain no-repeat;
+}
+
 @media(max-width:950px){
-  .public-nav .brand-mark{width:54px!important;height:54px!important}
+  .public-nav .brand-mark{width:54px;height:54px}
+  .mandala-wrap{width:min(500px,90vw)}
 }
 @media(max-width:600px){
-  .brand-mark{width:48px!important;height:48px!important}
-  .public-nav .brand-mark{width:48px!important;height:48px!important}
-  .sidebar .brand-mark{width:46px!important;height:46px!important}
-  .mandala-core img{width:58%!important;height:58%!important}
+  .brand-mark{width:48px;height:48px}
+  .public-nav .brand-mark{width:48px;height:48px}
+  .mandala-wrap{width:min(350px,92vw);margin:auto;--orbit-radius:142px}
+  .mandala-core{width:104px;height:104px}
+  .mandala-logo{width:74px;height:74px}
+  .mandala-sweep{width:48%;height:48%}
+  .signal{width:5px;height:5px}
+  .mandala-label{font-size:7px}
 }
-
-/* ============================================================
-   HERO MANDALA — refined center treatment
-   The supplied Sarv PNG has a white background. Invert + screen
-   makes that background disappear against the dark hero while
-   retaining the geometric linework.
-   ============================================================ */
-.mandala-core{
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  width:28%!important;
-  height:28%!important;
-  display:grid!important;
-  place-items:center!important;
-  z-index:5!important;
-}
-.mandala-core-ring{
-  width:100%;
-  height:100%;
-  border:1px solid rgba(201,162,74,.72);
-  border-radius:50%;
-  display:grid;
-  place-items:center;
-  background:rgba(15,15,14,.28);
-  box-shadow:0 0 0 8px rgba(201,162,74,.025), 0 0 30px rgba(201,162,74,.05);
-}
-.mandala-core img{
-  width:66%!important;
-  height:66%!important;
-  object-fit:contain!important;
-  display:block!important;
-  border:0!important;
-  transform:none!important;
-  filter:invert(1) grayscale(1) brightness(1.7)!important;
-  mix-blend-mode:screen!important;
-  opacity:.88;
-}
-@media(max-width:600px){
-  .mandala-core{width:30%!important;height:30%!important}
-  .mandala-core img{width:64%!important;height:64%!important}
-}
-
-/* FINAL LOGO BACKGROUND FIX:
-   The supplied PNG is opaque. The SVG luminance filter converts its white
-   background to transparency and retains the geometric lines as white. */
-.brand-mark,
-.mandala-core img{
-  filter:url("#sarv-logo-transparent")!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  transform:none!important;
-}
-
-/* FINAL SARV LOGO IMPLEMENTATION
-   Logo is rendered as inline SVG with luminance-to-alpha conversion.
-   No opaque PNG <img> is rendered directly. */
-
-/* Remove every remnant of the old polygon logo container. */
-.mandala-core{
-  width:112px!important;
-  height:112px!important;
-  clip-path:none!important;
-  border:0!important;
-  background:transparent!important;
-  color:transparent!important;
-  box-shadow:none!important;
-  display:grid!important;
-  place-items:center!important;
-  overflow:visible!important;
-  animation:pulse 3s ease-in-out infinite;
-}
-.mandala-logo{
-  width:78px!important;
-  height:78px!important;
-  display:block!important;
-  overflow:visible!important;
-}
-.brand-mark{
-  width:68px!important;
-  height:68px!important;
-  display:block!important;
-  overflow:visible!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:none!important;
-  border:0!important;
-  box-shadow:none!important;
-  transform:none!important;
-}
-.public-nav .brand-mark{width:64px!important;height:64px!important}
-.sidebar .brand-mark{width:54px!important;height:54px!important}
-.auth-brand .brand-mark{width:62px!important;height:62px!important}
-
-@media(max-width:600px){
-  .brand-mark{width:48px!important;height:48px!important}
-  .public-nav .brand-mark{width:48px!important;height:48px!important}
-  .sidebar .brand-mark{width:46px!important;height:46px!important}
-  .mandala-core{width:94px!important;height:94px!important}
-  .mandala-logo{width:66px!important;height:66px!important}
-}
-
-/* FINAL: true vector Sarv mark. No PNG, filters, masks or blend modes. */
-.brand-mark{
-  width:68px!important;
-  height:68px!important;
-  display:block!important;
-  object-fit:contain!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  transform:none!important;
-}
-.public-nav .brand-mark{width:64px!important;height:64px!important}
-.sidebar .brand-mark{width:54px!important;height:54px!important}
-.auth-brand .brand-mark{width:62px!important;height:62px!important}
-
-.mandala-core{
-  width:112px!important;
-  height:112px!important;
-  clip-path:none!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  display:grid!important;
-  place-items:center!important;
-  overflow:visible!important;
-}
-.mandala-logo{
-  width:84px!important;
-  height:84px!important;
-  display:block!important;
-  object-fit:contain!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-}
-@media(max-width:600px){
-  .brand-mark{width:48px!important;height:48px!important}
-  .public-nav .brand-mark{width:48px!important;height:48px!important}
-  .mandala-core{width:94px!important;height:94px!important}
-  .mandala-logo{width:70px!important;height:70px!important}
-}
-
-/* Visible Sarv vector mark */
-.brand-mark{
-  opacity:1!important;
-  visibility:visible!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-}
-.mandala-logo{
-  opacity:1!important;
-  visibility:visible!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-}
-
-.public-nav .brand-mark{width:68px!important;height:68px!important}
-.mandala-logo{width:96px!important;height:96px!important}
-@media(max-width:600px){
-  .public-nav .brand-mark{width:52px!important;height:52px!important}
-  .mandala-logo{width:72px!important;height:72px!important}
-}
-
-/* Exact Sarv logo: no tracing, no duplicate vector strokes. */
-.brand-mark,.mandala-logo{
-  display:block!important;
-  opacity:1!important;
-  visibility:visible!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  transform:none!important;
-  object-fit:contain!important;
-}
-.brand-mark{width:68px!important;height:68px!important}
-.public-nav .brand-mark{width:68px!important;height:68px!important}
-.mandala-logo{width:96px!important;height:96px!important}
-
-/* Keep the radar from visually competing with the logo's own outer circle. */
-.mandala-core{
-  width:132px!important;height:132px!important;
-  display:grid!important;place-items:center!important;
-  border-radius:50%!important;
-  background:#141413!important;
-  border:0!important;
-  box-shadow:none!important;
-  clip-path:none!important;
-  overflow:hidden!important;
-  z-index:10!important;
-}
-@media(max-width:600px){
-  .brand-mark,.public-nav .brand-mark{width:50px!important;height:50px!important}
-  .mandala-core{width:104px!important;height:104px!important}
-  .mandala-logo{width:76px!important;height:76px!important}
+@media(prefers-reduced-motion:reduce){
+  .mandala-ring,.mandala-core,.mandala-core::after,.mandala-sweep,.signal{animation:none!important}
 }
