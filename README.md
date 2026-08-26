@@ -169,3 +169,10 @@ docker compose up --build
 ```
 
 The `/admin` page now shows the actual profile/RLS error instead of silently redirecting when authentication succeeds but authorization lookup fails.
+
+
+## Official Trinetra logo
+
+The supplied geometric mark is now the primary brand asset at `public/brand/trinetra-logo.png`.
+
+It is used by the public site, authentication screens, Super Admin sidebar, mobile navigation, favicon, and PWA manifest. The source artwork is preserved; dark mode applies a CSS inversion so the mark remains legible on the charcoal interface.

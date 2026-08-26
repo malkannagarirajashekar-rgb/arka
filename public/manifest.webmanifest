@@ -9,9 +9,9 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/icons/icon.svg",
+      "src": "/brand/trinetra-logo.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

@@ -1,5 +1,5 @@
 const CACHE = "trinetra-shell-v1";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg"];
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/brand/trinetra-logo.png"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
