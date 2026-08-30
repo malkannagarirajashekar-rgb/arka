@@ -1,4 +1,4 @@
-# Sarv Platform — Baby Step 01 (production UI foundation)
+# Arka Platform — Baby Step 01 (production UI foundation)
 
 ## Stack
 
