@@ -4,16 +4,12 @@ type SarvLogoProps = {
   tone?: "light" | "gold";
 };
 
-export function SarvLogo({
-  className = "",
-  decorative = false,
-  tone = "light",
-}: SarvLogoProps) {
+export function SarvLogo({ className = "", decorative = false }: SarvLogoProps) {
   return (
     <img
-      className={`${className} sarv-logo sarv-logo-${tone}`}
-      src={tone === "gold" ? "/brand/sarv-logo-gold.svg" : "/brand/sarv-logo.svg"}
-      alt={decorative ? "" : "Sarv"}
+      className={`${className} arka-logo`}
+      src="/brand/arka-logo.png"
+      alt={decorative ? "" : "Arka"}
       aria-hidden={decorative ? true : undefined}
       draggable="false"
     />

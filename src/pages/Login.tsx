@@ -122,7 +122,7 @@ export default function Login() {
 
   return (
     <main className="auth">
-      <Link className="back-link" to="/"><ArrowLeft size={14}/> Back to Sarv</Link>
+      <Link className="back-link" to="/"><ArrowLeft size={14}/> Back to Arka</Link>
 
       <div className="auth-brand">
         <Brand />
@@ -131,7 +131,7 @@ export default function Login() {
           {title}
         </motion.h1>
         <p>
-          {mode === "login" && "Sign in to the connected administration platform."}
+          {mode === "login" && "Sign in to the connected Arka security platform."}
           {mode === "signup" && "Create your account and begin your secure journey."}
           {mode === "forgot" && "Enter your email and we'll send instructions to reset your password."}
         </p>

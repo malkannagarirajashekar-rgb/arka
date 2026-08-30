@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <Link className={`brand ${compact ? "brand-compact" : ""}`} to="/" aria-label="Sarv home">
-      <span className="brand-mark" aria-hidden="true" />
+    <Link className={`brand ${compact ? "brand-compact" : ""}`} to="/" aria-label="Arka home">
+      <span className="brand-mark" aria-hidden="true">
+        <img src="/brand/arka-logo.png" alt="" draggable="false" />
+      </span>
       <span className="brand-wordmark">
-        <strong>Sarv</strong>
-        {!compact && <small>CYBER DEFENSE</small>}
+        <strong>Arka</strong>
+        {!compact && <small>SECURITY SYSTEMS</small>}
       </span>
     </Link>
   );
