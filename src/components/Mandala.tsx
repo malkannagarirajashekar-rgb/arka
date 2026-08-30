@@ -9,7 +9,7 @@ export function Mandala() {
       <div className="mandala-cross c2" aria-hidden="true" />
       <div className="mandala-sweep" aria-hidden="true" />
       <div className="mandala-core">
-        <img className="mandala-logo" src="/brand/arka-logo.png" alt="" aria-hidden="true" />
+        <img className="mandala-logo" src="/brand/arka-logo-clean.png" alt="" aria-hidden="true" />
       </div>
       <span className="mandala-label l1">OBSERVE</span>
       <span className="mandala-label l2">PROTECT</span>

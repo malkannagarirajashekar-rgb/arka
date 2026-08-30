@@ -135,7 +135,7 @@ export default function Login() {
           {mode === "signup" && "Create your account and begin your secure journey."}
           {mode === "forgot" && "Enter your email and we'll send instructions to reset your password."}
         </p>
-        <div className="auth-orbit"><div /><span className="auth-orbit-logo" aria-hidden="true" /></div>
+        <div className="auth-orbit"><div /><img className="auth-orbit-logo" src="/brand/arka-logo-clean.png" alt="" aria-hidden="true" draggable="false" /></div>
       </div>
 
       <motion.form className="login-card" onSubmit={submit} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} key={mode}>
