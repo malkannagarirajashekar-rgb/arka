@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(() => {
-    const stored = localStorage.getItem("sarv-theme");
+    const stored = localStorage.getItem("arka-theme");
     return stored ? stored === "dark" : true;
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
-    localStorage.setItem("sarv-theme", dark ? "dark" : "light");
+    localStorage.setItem("arka-theme", dark ? "dark" : "light");
   }, [dark]);
 
   return (

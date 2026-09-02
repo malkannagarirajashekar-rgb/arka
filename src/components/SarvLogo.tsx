@@ -8,7 +8,7 @@ export function SarvLogo({ className = "", decorative = false }: SarvLogoProps) 
   return (
     <img
       className={`${className} arka-logo`}
-      src="/brand/arka-logo.png"
+      src="/brand/arka-logo-clean.png"
       alt={decorative ? "" : "Arka"}
       aria-hidden={decorative ? true : undefined}
       draggable="false"
