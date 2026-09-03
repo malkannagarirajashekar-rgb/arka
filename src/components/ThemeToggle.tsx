@@ -3,18 +3,25 @@ import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(() => {
-    const stored = localStorage.getItem("arka-theme");
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("arka-theme");
     return stored ? stored === "dark" : true;
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
-    localStorage.setItem("arka-theme", dark ? "dark" : "light");
+    window.localStorage.setItem("arka-theme", dark ? "dark" : "light");
   }, [dark]);
 
   return (
-    <button className="icon-button" onClick={() => setDark((v) => !v)} aria-label="Toggle theme">
-      {dark ? <Sun size={16} /> : <Moon size={16} />}
+    <button
+      type="button"
+      className="icon-button"
+      onClick={() => setDark((value) => !value)}
+      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+      title={dark ? "Light theme" : "Dark theme"}
+    >
+      {dark ? <Sun size={17} /> : <Moon size={17} />}
     </button>
   );
 }

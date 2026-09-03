@@ -1,6 +1,6 @@
 {
-  "name": "Sarv Cyber Defense",
-  "short_name": "Sarv",
+  "name": "Arka Security Systems",
+  "short_name": "Arka",
   "description": "Secure, centralized administration for modern organizations.",
   "start_url": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/brand/sarv-logo.png",
+      "src": "/brand/arka-logo-transparent.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"

@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import RolePlaceholder from "./pages/RolePlaceholder";
+import Workspace from "./pages/Workspace";
 
 export default function App() {
   return (
@@ -11,7 +12,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/tenant" element={<RolePlaceholder role="tenant_admin" />} />
-      <Route path="/app" element={<RolePlaceholder role="tenant_user" />} />
+      <Route path="/app" element={<Workspace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,51 +1,290 @@
 import { motion } from "motion/react";
-import { ArrowDown, ArrowRight, CheckCircle2, GitBranch, Layers3, ShieldCheck, Users } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  ChevronRight,
+  Fingerprint,
+  Layers3,
+  LockKeyhole,
+  Network,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Brand } from "../components/Brand";
-import { Mandala } from "../components/Mandala";
 import { PublicNav } from "../components/PublicNav";
 
-const fadeUp = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.2 }, transition: { duration: 0.65, ease: "easeOut" } };
+type Layer = "identity" | "applications" | "policy" | "response";
+
+const layers: Record<Layer, {
+  number: string;
+  title: string;
+  description: string;
+  metric: string;
+  metricLabel: string;
+  accent: string;
+  icon: typeof Fingerprint;
+  events: string[];
+}> = {
+  identity: {
+    number: "01",
+    title: "Identity fabric",
+    description: "Understand who is acting, what they can reach, and why access exists.",
+    metric: "1,248",
+    metricLabel: "active identities",
+    accent: "cyan",
+    icon: Fingerprint,
+    events: ["Admin session verified", "Contractor access reviewed", "Role boundary changed"],
+  },
+  applications: {
+    number: "02",
+    title: "Application mesh",
+    description: "See the services, integrations and dependencies behind every access path.",
+    metric: "36",
+    metricLabel: "protected apps",
+    accent: "violet",
+    icon: Network,
+    events: ["SaaS connection healthy", "New integration detected", "Service dependency mapped"],
+  },
+  policy: {
+    number: "03",
+    title: "Policy intelligence",
+    description: "Turn rules into visible decisions with ownership and context attached.",
+    metric: "98.7",
+    metricLabel: "security posture",
+    accent: "pink",
+    icon: ShieldCheck,
+    events: ["Boundary evaluated", "Policy exception resolved", "Least-privilege rule applied"],
+  },
+  response: {
+    number: "04",
+    title: "Response layer",
+    description: "Move from signal to accountable action without losing the trail.",
+    metric: "04",
+    metricLabel: "open signals",
+    accent: "orange",
+    icon: Zap,
+    events: ["Risk signal triaged", "Owner assigned", "Response action queued"],
+  },
+};
+
+const layerOrder: Layer[] = ["identity", "applications", "policy", "response"];
 
 export default function Home() {
+  const [activeLayer, setActiveLayer] = useState<Layer>("identity");
+  const [scanning, setScanning] = useState(false);
+  const active = layers[activeLayer];
+  const ActiveIcon = active.icon;
+
+  function runScan() {
+    if (scanning) return;
+    setScanning(true);
+    window.setTimeout(() => setScanning(false), 1800);
+  }
+
   return (
-    <div className="site">
-      <div className="ambient ambient-a" /><div className="ambient ambient-b" /><div className="grain" />
+    <div className="arka-site home-refresh">
+      <div className="home-ambient home-ambient-a" />
+      <div className="home-ambient home-ambient-b" />
+      <div className="home-ambient home-ambient-c" />
+      <div className="arka-noise" />
       <PublicNav />
+
       <main>
-        <section className="hero section-shell">
-          <motion.div className="hero-copy" initial={{ opacity: 0, x: -25 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .8 }}>
-            <p className="eyebrow"><span /> INTELLIGENT SECURITY · MODERN INDIA</p>
-            <h1>See clearly.<br /><em>Act decisively.</em></h1>
-            <p className="hero-lead">Arka is a centralized security operations platform for identities, applications, integrations and teams — bringing visibility and control into one system.</p>
-            <div className="hero-buttons"><Link className="button button-primary" to="/login">Enter Arka <ArrowRight size={16} /></Link><a className="button button-ghost" href="#architecture">Explore platform <ArrowDown size={16} /></a></div>
-            <div className="trust-line"><span><CheckCircle2 size={13}/> Multi-tenant</span><span><CheckCircle2 size={13}/> Role-based</span><span><CheckCircle2 size={13}/> Audit-ready</span><span><CheckCircle2 size={13}/> Deployment-ready</span></div>
+        <section className="home-hero shell">
+          <div className="hero-intro">
+            <motion.div
+              className="hero-kicker"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span /> 01 / CONTROL PLANE
+            </motion.div>
+            <motion.div
+              className="hero-title-wrap"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: .05, duration: .6 }}
+            >
+              <h1>Security that<br /><em>moves with you.</em></h1>
+              <p>Arka turns identity, applications, policy and response into one interactive security system — not another dashboard to babysit.</p>
+            </motion.div>
+            <div className="hero-actions">
+              <Link className="gradient-button" to="/login">Enter Arka <ArrowRight size={16} /></Link>
+              <a className="quiet-action" href="#control">Explore the control plane <ChevronRight size={15} /></a>
+            </div>
+          </div>
+
+          <motion.div
+            className="command-deck"
+            id="control"
+            initial={{ opacity: 0, y: 26 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: .16, duration: .7 }}
+          >
+            <div className="deck-topline">
+              <div><span className="live-dot" /> ARKA / LIVE CONTROL PLANE</div>
+              <button onClick={runScan} className={`scan-button ${scanning ? "is-scanning" : ""}`}>
+                <Play size={11} fill="currentColor" /> {scanning ? "SCANNING" : "RUN CHECK"}
+              </button>
+            </div>
+
+            <div className="deck-main">
+              <div className="layer-rail">
+                <div className="rail-label">SECURITY LAYERS</div>
+                {layerOrder.map((key) => {
+                  const item = layers[key];
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={key}
+                      className={`layer-tab ${activeLayer === key ? "active" : ""}`}
+                      onClick={() => setActiveLayer(key)}
+                    >
+                      <span className={`tab-icon ${item.accent}`}><Icon size={17} /></span>
+                      <span className="tab-copy"><small>{item.number}</small><strong>{item.title}</strong></span>
+                      <ChevronRight size={14} />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className={`layer-stage ${active.accent}`}>
+                <div className="stage-grid" />
+                <div className="stage-top">
+                  <div className="stage-status"><span /> VERIFIED / LIVE</div>
+                  <span>{active.number} / 04</span>
+                </div>
+                <div className="stage-center">
+                  <div className="signal-core">
+                    <div className="signal-core-ring" />
+                    <div className="signal-core-ring second" />
+                    <ActiveIcon size={29} />
+                  </div>
+                  <div>
+                    <div className="stage-overline">CURRENT LAYER</div>
+                    <h2>{active.title}</h2>
+                    <p>{active.description}</p>
+                  </div>
+                </div>
+                <div className="stage-metric">
+                  <strong>{active.metric}</strong>
+                  <span>{active.metricLabel}</span>
+                </div>
+                <div className="stage-feed">
+                  {active.events.map((event, i) => (
+                    <div key={event} className="feed-item">
+                      <span className={i === 0 ? "pulse" : ""}>{i === 0 ? "●" : "—"}</span>
+                      <b>{event}</b>
+                      <small>{i === 0 ? "now" : `${(i + 1) * 4}m`}</small>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="deck-footer">
+              <div><Activity size={13} /> Signal stream <b>nominal</b></div>
+              <div className="deck-progress"><span /><span /><span /><span /></div>
+              <div>Last check <b>just now</b></div>
+            </div>
           </motion.div>
-          <motion.div className="hero-art" initial={{ opacity: 0, scale: .88 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, delay: .15 }}><Mandala /></motion.div>
         </section>
 
-        <motion.section id="architecture" className="section-shell section-border" {...fadeUp}>
-          <div className="section-heading"><p className="eyebrow"><span /> SECURITY ARCHITECTURE</p><h2>One system.<br /><em>Every layer connected.</em></h2><p>Arka starts with a clear ownership model, then connects identities, applications and integrations without losing context.</p></div>
-          <div className="hierarchy-grid"><Role icon={<ShieldCheck/>} index="01" title="Control" text="Global policy, visibility and governance across the environment." tags={["Tenants","Policies","Audit"]} featured/><div className="connector">→</div><Role icon={<Users/>} index="02" title="Identity" text="Manage people, roles and access with explicit boundaries." tags={["Users","Roles","Access"]}/><div className="connector">→</div><Role icon={<Layers3/>} index="03" title="Resources" text="Connect applications and services to the right teams." tags={["Apps","Services","Scopes"]}/></div>
-        </motion.section>
+        <section className="signal-strip shell">
+          <div className="strip-item"><span>01</span><b>Identity</b><small>WHO</small></div>
+          <div className="strip-line" />
+          <div className="strip-item"><span>02</span><b>Applications</b><small>WHERE</small></div>
+          <div className="strip-line" />
+          <div className="strip-item"><span>03</span><b>Policy</b><small>WHY</small></div>
+          <div className="strip-line" />
+          <div className="strip-item"><span>04</span><b>Response</b><small>WHAT NEXT</small></div>
+        </section>
 
-        <motion.section id="solutions" className="section-shell" {...fadeUp}>
-          <div className="section-heading split"><div><p className="eyebrow"><span /> PLATFORM FOUNDATION</p><h2>Built around the<br /><em>signal, not the noise.</em></h2></div><p>Every Arka module is independently useful and designed to operate as part of one security control plane.</p></div>
-          <div className="feature-grid"><Feature n="01" icon={<Users/>} title="Identity fabric" text="Centralize users, roles and ownership with clear access boundaries."/><Feature n="02" icon={<ShieldCheck/>} title="Policy control" text="Define who can access what, and keep every important action accountable."/><Feature n="03" icon={<Layers3/>} title="Application layer" text="Connect internal applications and services to governed environments."/><Feature n="04" icon={<GitBranch/>} title="Integration mesh" text="Create a foundation for agents, repositories, deployments and automation."/></div>
-        </motion.section>
+        <section className="interactive-section shell" id="system">
+          <div className="section-rule" />
+          <div className="section-kicker"><span /> 02 / SYSTEM MODEL</div>
+          <div className="interactive-head">
+            <div><h2>Don't watch security.<br /><em>Operate it.</em></h2></div>
+            <p>Select a layer to see how context travels through Arka. The interface itself becomes the explanation — every state has an owner, reason and next action.</p>
+          </div>
 
-        <motion.section id="platform" className="section-shell platform-section" {...fadeUp}>
-          <div className="platform-copy"><p className="eyebrow"><span /> SECURITY CONTROL PLANE</p><h2>Visibility without<br /><em>the clutter.</em></h2><p>The authenticated workspace turns the architecture into an operational system — with clear metrics, health signals and actionable control.</p><Link className="button button-primary" to="/login">Open platform <ArrowRight size={16}/></Link></div>
-          <div className="dashboard-mock"><div className="dash-bar"><strong>Arka / Overview</strong><span><i/> Systems nominal</span></div><div className="metric-grid"><Metric label="Tenants" value="24" change="+12%"/><Metric label="Identities" value="1,248" change="+18%"/><Metric label="Services" value="36" change="+8%"/><Metric label="Health" value="99.9%" change="Stable" good/></div><div className="chart"><div className="chart-title">Security activity <span>LAST 24 HOURS</span></div><div className="bars">{[30,55,42,74,58,88,70,94,62,82,68,96].map((h,i)=><i key={i} style={{height:`${h}%`}}/>)}</div></div></div>
-        </motion.section>
+          <div className="model-grid">
+            <div className="model-stack">
+              {layerOrder.map((key, index) => {
+                const item = layers[key];
+                const Icon = item.icon;
+                return (
+                  <button key={key} className={`model-card ${activeLayer === key ? "selected" : ""}`} onClick={() => setActiveLayer(key)}>
+                    <span className={`model-number ${item.accent}`}>{item.number}</span>
+                    <span className="model-icon"><Icon size={18} /></span>
+                    <span className="model-text"><b>{item.title}</b><small>{item.description}</small></span>
+                    <span className="model-arrow">{activeLayer === key ? <Check size={15} /> : <ArrowUpRight size={15} />}</span>
+                    {index < 3 && <span className="model-connector" />}
+                  </button>
+                );
+              })}
+            </div>
 
-        <motion.section className="onboarding-strip section-shell" {...fadeUp}><div><p className="eyebrow"><span/> READY WHEN YOU ARE</p><h2>Start with a secure identity.</h2><p>Create an account and let an authorized administrator assign your organization access.</p></div><Link className="button button-outline" to="/login?mode=signup">Create account <ArrowRight size={16}/></Link></motion.section>
-        <motion.section id="about" className="quote section-shell" {...fadeUp}><span className="quote-mark">✦</span><blockquote>Clarity is a security feature.</blockquote><p>Arka turns complex environments into systems people can actually understand and control.</p><small>Observe. Protect. Respond. Control.</small></motion.section>
+            <div className="decision-panel">
+              <div className="decision-header"><span>DECISION TRACE</span><b><span /> {active.title}</b></div>
+              <div className="decision-title"><Sparkles size={18} /><div><small>CONTEXT ASSEMBLED</small><h3>One signal. Full context.</h3></div></div>
+              <div className="decision-flow">
+                <Flow label="Identity" value="Verified" />
+                <Flow label="Application" value="Known" />
+                <Flow label="Policy" value="Allowed" />
+                <Flow label="Action" value="Recorded" />
+              </div>
+              <div className="decision-footer"><span>Decision confidence</span><strong>99.2%</strong><div className="confidence"><i /></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="proof-section shell" id="architecture">
+          <div className="proof-copy">
+            <div className="section-kicker"><span /> 03 / WHY ARKA</div>
+            <h2>Less chasing.<br /><em>More certainty.</em></h2>
+            <p>Security teams shouldn't reconstruct an incident across six products. Arka keeps the relationship between people, systems, rules and actions visible in one place.</p>
+            <div className="proof-list">
+              <Proof icon={<Fingerprint />} title="Trace every identity" text="Know who has access and where it travels." />
+              <Proof icon={<Layers3 />} title="Connect every application" text="Keep dependencies and integrations in context." />
+              <Proof icon={<LockKeyhole />} title="Prove every decision" text="Make policy outcomes explainable and auditable." />
+            </div>
+          </div>
+          <div className="signal-board">
+            <div className="board-header"><span>ARKA / SIGNAL BOARD</span><b><i /> SYSTEM NOMINAL</b></div>
+            <div className="board-canvas">
+              <div className="board-column"><small>IDENTITY</small><div className="board-pill"><span /> Admin / verified</div><div className="board-pill"><span /> Analyst / active</div><div className="board-pill muted"><span /> Vendor / restricted</div></div>
+              <div className="board-column middle"><small>POLICY ENGINE</small><div className="policy-chip">ACCESS CHECK <b>PASS</b></div><div className="policy-chip">DEVICE TRUST <b>PASS</b></div><div className="policy-chip">RISK SCORE <b>LOW</b></div></div>
+              <div className="board-column"><small>ACTION</small><div className="action-card"><Zap size={15} /><b>Session approved</b><span>Recorded 00:14 ago</span></div><div className="action-card secondary"><ShieldCheck size={15} /><b>Boundary intact</b><span>Verified automatically</span></div></div>
+              <div className="board-connector c1" /><div className="board-connector c2" />
+            </div>
+          </div>
+        </section>
+
+        <section className="access-section shell" id="access">
+          <div className="access-card">
+            <div className="access-icon"><ShieldCheck size={21} /></div>
+            <div><div className="section-kicker">04 / ACCESS</div><h2>Put the whole system <em>in motion.</em></h2><p>Use your organization credentials to enter the secure Arka workspace.</p></div>
+            <Link className="gradient-button" to="/login">Enter Arka <ArrowRight size={17} /></Link>
+          </div>
+        </section>
       </main>
-      <footer className="footer"><div><Brand/><p>Security systems designed for clarity, scale and control.</p></div><div><h4>Platform</h4><a href="#architecture">Architecture</a><a href="#solutions">Solutions</a><a href="#platform">Control plane</a></div><div><h4>Company</h4><a href="#about">About</a><Link to="/login">Sign in</Link></div><div><h4>Principle</h4><p>Make the signal impossible to miss.</p></div></footer>
+
+      <footer className="arka-footer shell"><Brand /><span>SECURITY / IDENTITY / CONTROL</span><Link to="/login">Secure access <ArrowUpRight size={15} /></Link></footer>
     </div>
   );
 }
-function Role({icon,index,title,text,tags,featured=false}:{icon:React.ReactNode;index:string;title:string;text:string;tags:string[];featured?:boolean}){return <div className={`role-card ${featured?"featured":""}`}><span className="role-index">{index}</span><div className="role-icon">{icon}</div><h3>{title}</h3><p>{text}</p><div className="tags">{tags.map(t=><span key={t}>{t}</span>)}</div></div>}
-function Feature({n,icon,title,text}:{n:string;icon:React.ReactNode;title:string;text:string}){return <article className="feature-card"><span className="feature-number">{n}</span><div className="feature-icon">{icon}</div><h3>{title}</h3><p>{text}</p></article>}
-function Metric({label,value,change,good=false}:{label:string;value:string;change:string;good?:boolean}){return <div className="metric"><small>{label}</small><strong>{value}</strong><span className={good?"good":""}>{change}</span></div>}
+
+function Flow({ label, value }: { label: string; value: string }) {
+  return <div className="flow-step"><span className="flow-node"><Check size={12} /></span><div><small>{label}</small><b>{value}</b></div></div>;
+}
+
+function Proof({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
+  return <div className="proof-row"><span>{icon}</span><div><b>{title}</b><p>{text}</p></div></div>;
+}

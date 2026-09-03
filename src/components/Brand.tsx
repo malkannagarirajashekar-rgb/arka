@@ -4,7 +4,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link className={`brand ${compact ? "brand-compact" : ""}`} to="/" aria-label="Arka home">
       <span className="brand-mark" aria-hidden="true">
-        <img src="/brand/arka-logo-clean.png" alt="" draggable="false" />
+        <img src="/brand/arka-logo-transparent.png" alt="" draggable="false" />
       </span>
       <span className="brand-wordmark">
         <strong>Arka</strong>

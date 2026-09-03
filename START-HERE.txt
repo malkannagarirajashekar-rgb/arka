@@ -1,0 +1,30 @@
+ARKA — FRESH UI REBUILD
+
+This package is intended to replace the existing Arka project folder.
+
+WHAT CHANGED
+- Rebuilt the public website layout and opening section.
+- Restored a large, visible orbital system in the opening/login composition.
+- Rebuilt the login page to closely match the supplied reference composition.
+- Uses the supplied Arka logo at public/brand/arka-logo-transparent.png.
+- Back to website is fixed at the top-left of the login page.
+- Added a working dark/light theme toggle using localStorage.
+- Preserved Supabase client configuration and the existing authentication flow.
+- Preserved protected /admin, /tenant and /app routes and role checks.
+
+INSTALL
+1. Replace the contents of your current project with this arka_work folder.
+2. Keep your existing .env file. Do NOT overwrite it with .env.example.
+3. Run: npm install
+4. Run: npm run dev
+5. Open: http://localhost:5173
+
+SUPABASE
+The browser-side authentication still uses:
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
+
+Do not put service-role keys in the frontend.
+
+IMPORTANT
+The Google button is intentionally disabled because no Google OAuth provider was enabled in the supplied project. The email/password Supabase flow is preserved.
