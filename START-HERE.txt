@@ -1,35 +1,13 @@
-ARKA — START HERE
-=================
+ARKA V46
 
-1. Keep this .env file (already restored from the original Arka project).
-2. npm install
-3. Run the existing Arka schema/migrations in Supabase.
-4. IMPORTANT: run migrations/004_auth_access_context.sql after the identity/RBAC schema.
-5. npm run dev
-6. Open http://localhost:5173
+1. Extract this project.
+2. Run:
+   supabase/migrations/20260916_0004_arka_onboarding_schema_compat.sql
+   in Supabase SQL Editor.
+3. Reload the app.
+4. Sign in as the Tenant Admin and test Save & continue.
 
-LOGIN FLOW
-----------
-- Supabase handles email/password authentication.
-- After successful login Arka resolves the user's role and routes automatically.
-- SUPER_ADMIN -> /admin
-- TENANT_ADMIN -> /tenant (or /onboarding when onboarding is incomplete)
-- TENANT_USER -> /app
-- A newly registered user with no organization membership -> /onboarding
-
-REFERENCE ONBOARDING
---------------------
-The organization setup is the brother's reference flow:
-01 Initial Security Profile
-02 Technology Environment
-03 Security Stack
-04 Security Priorities
-
-On completion Arka creates/activates the tenant and its default security workspace.
-
-If you change Supabase projects, replace the VITE_SUPABASE_URL and
-VITE_SUPABASE_ANON_KEY values in .env with the new project's public values.
-
-
-SIGN-OUT FIX
-The onboarding Sign out button now performs a real Supabase signOut() before returning to /login.
+For frontend-only changes during local development, use Vite directly (npm run dev)
+so source changes hot-reload. If using Docker, see docker-compose.yml and use a
+bind-mounted source directory/dev container rather than rebuilding the image for
+every source edit.

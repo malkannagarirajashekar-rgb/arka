@@ -1,0 +1,15 @@
+ARKA V37 — ONBOARDING SAVE + TENANT SHELL REPAIR
+
+1. Added uniquely named save_arka_tenant_onboarding RPC to avoid legacy RPC ambiguity.
+2. Removed scalar SELECTs that could throw "query returned more than one row" by using deterministic LIMIT 1 lookups.
+3. Fresh signup creates tenant + tenant roles + active Tenant Admin membership in one transaction.
+4. Existing Tenant Admin onboarding resumes the existing tenant deterministically.
+5. Onboarding data is persisted at every step.
+6. Workspace creation occurs only on final completion.
+7. Audit logging cannot block onboarding.
+8. Frontend now calls the repaired RPC.
+9. Tenant onboarding overlay remains a modal over the Tenant Admin shell instead of visually replacing it.
+10. Completion uses SPA navigation instead of a hard page reload.
+
+No new frontend role/email authorization logic was added.
+No email is hardcoded.

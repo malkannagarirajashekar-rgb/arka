@@ -1,0 +1,9 @@
+ARKA V46 — Overlay / Registry / Onboarding Compatibility Repair
+
+- Preserves the V44 command-deck tenant registry UI and themed Admin modules.
+- Keeps the warm graphite/ivory + sage/copper theme system in dark and light modes.
+- Replaces the previous onboarding compatibility migration with a truly non-destructive repair.
+- Creates tenant_onboarding when absent and adds missing columns when an older table already exists.
+- Backfills normalized onboarding fields from step_data where possible.
+- Keeps onboarding writes behind the existing SECURITY DEFINER RPC.
+- No existing tenant_onboarding rows are deleted.

@@ -1,0 +1,9 @@
+ARKA V38 — TRUE ONBOARDING MODAL + COLOR SYSTEM
+
+- Rebuilt TenantOnboardingOverlay as a real fixed modal over the Tenant Admin workspace.
+- Tenant Admin shell remains mounted and visible underneath a blurred/dimmed backdrop.
+- Replaced green-on-green visual treatment with warm ivory, sage, muted terracotta and neutral stone accents.
+- Redesigned onboarding into Context Studio with a left step rail and focused workspace.
+- Added a clearly distinct completion state.
+- Preserved V37 onboarding save/RPC/RBAC behavior.
+- Theme toggle remains available; onboarding modal is intentionally high-contrast against the underlying workspace.

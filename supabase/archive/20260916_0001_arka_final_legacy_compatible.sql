@@ -90,6 +90,139 @@ exception
 end $$;
 
 
+
+-- ============================================================
+-- 1A. COMPATIBILITY LAYER FOR EXISTING ARKA INSTALLATIONS
+-- ============================================================
+-- This migration is intentionally safe for a partially-created database.
+-- CREATE TABLE IF NOT EXISTS does not add columns to an existing table, so
+-- missing columns are added here before any ARKA function references them.
+
+DO $$
+BEGIN
+    -- profiles
+    IF to_regclass('public.profiles') IS NOT NULL THEN
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email text;
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name text;
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url text;
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status text DEFAULT 'pending';
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_platform_user boolean DEFAULT false;
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+
+        UPDATE public.profiles p
+        SET email = u.email
+        FROM auth.users u
+        WHERE p.id = u.id AND (p.email IS NULL OR btrim(p.email) = '');
+
+        UPDATE public.profiles SET status = 'pending' WHERE status IS NULL;
+        UPDATE public.profiles SET is_platform_user = false WHERE is_platform_user IS NULL;
+        UPDATE public.profiles SET created_at = now() WHERE created_at IS NULL;
+        UPDATE public.profiles SET updated_at = now() WHERE updated_at IS NULL;
+    END IF;
+
+    -- tenants
+    IF to_regclass('public.tenants') IS NOT NULL THEN
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS name text;
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS slug text;
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS status text DEFAULT 'onboarding';
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS settings jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS created_by uuid;
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+        UPDATE public.tenants SET settings='{}'::jsonb WHERE settings IS NULL;
+        UPDATE public.tenants SET status='onboarding' WHERE status IS NULL;
+        UPDATE public.tenants SET slug='tenant-' || id::text WHERE slug IS NULL OR btrim(slug)='';
+        UPDATE public.tenants SET created_at=now() WHERE created_at IS NULL;
+        UPDATE public.tenants SET updated_at=now() WHERE updated_at IS NULL;
+    END IF;
+
+    -- roles
+    IF to_regclass('public.roles') IS NOT NULL THEN
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS code text;
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS name text;
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS description text;
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS scope text DEFAULT 'tenant';
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS is_system_role boolean DEFAULT true;
+        ALTER TABLE public.roles ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        UPDATE public.roles SET code=upper(regexp_replace(coalesce(name,'ROLE-'||id::text),'[^A-Za-z0-9_]+','_','g')) WHERE code IS NULL OR btrim(code)='';
+        UPDATE public.roles SET name=initcap(replace(lower(coalesce(code,'role')),'_',' ')) WHERE name IS NULL OR btrim(name)='';
+        UPDATE public.roles SET scope=case when upper(coalesce(code,''))='SUPER_ADMIN' then 'platform' else 'tenant' end WHERE scope IS NULL OR btrim(scope)='';
+        UPDATE public.roles SET is_system_role=true WHERE is_system_role IS NULL;
+        UPDATE public.roles SET created_at=now() WHERE created_at IS NULL;
+    END IF;
+
+    -- permissions
+    IF to_regclass('public.permissions') IS NOT NULL THEN
+        ALTER TABLE public.permissions ADD COLUMN IF NOT EXISTS resource text;
+        ALTER TABLE public.permissions ADD COLUMN IF NOT EXISTS action text;
+        ALTER TABLE public.permissions ADD COLUMN IF NOT EXISTS description text;
+        ALTER TABLE public.permissions ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        UPDATE public.permissions SET resource=coalesce(resource,'platform') WHERE resource IS NULL;
+        UPDATE public.permissions SET action=coalesce(action,'read') WHERE action IS NULL;
+        UPDATE public.permissions SET created_at=now() WHERE created_at IS NULL;
+    END IF;
+
+    -- user_tenant_memberships
+    IF to_regclass('public.user_tenant_memberships') IS NOT NULL THEN
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS user_id uuid;
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS role_id uuid;
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS invited_by uuid;
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS joined_at timestamptz;
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.user_tenant_memberships ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+    END IF;
+
+    -- invitations
+    IF to_regclass('public.invitations') IS NOT NULL THEN
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS email text;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS role_id uuid;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS invited_by uuid;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS status text DEFAULT 'pending';
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS token_hash text;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS expires_at timestamptz DEFAULT now() + interval '7 days';
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS accepted_at timestamptz;
+        ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+    END IF;
+
+    -- tenant_settings
+    IF to_regclass('public.tenant_settings') IS NOT NULL THEN
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS timezone text DEFAULT 'UTC';
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS data_region text;
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS security_settings jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS ai_settings jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS notification_settings jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.tenant_settings ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+    END IF;
+
+    -- user_preferences
+    IF to_regclass('public.user_preferences') IS NOT NULL THEN
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS user_id uuid;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS preferences jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+    END IF;
+
+    -- audit_logs
+    IF to_regclass('public.audit_logs') IS NOT NULL THEN
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS actor_id uuid;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS action text;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource_type text;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource_id uuid;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS metadata jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS ip_address inet;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS user_agent text;
+        ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+    END IF;
+END $$;
+
 -- ============================================================
 -- 2. PROFILES
 -- ============================================================
@@ -247,6 +380,8 @@ create table if not exists public.role_permissions (
 
 -- ============================================================
 -- 7. USER → TENANT MEMBERSHIP
+-- This table is required by every access/RLS helper below. It is created before
+-- any function that references it, preventing relation-not-found failures.
 -- ============================================================
 
 create table if not exists public.user_tenant_memberships (
@@ -554,6 +689,61 @@ execute function public.handle_new_user();
 
 
 -- ============================================================
+-- 15A. PLATFORM ADMIN BOOTSTRAP (SERVICE ROLE / SQL EDITOR ONLY)
+-- ============================================================
+-- The public signup flow can never grant SUPER_ADMIN. Provision the first
+-- platform administrator explicitly from the Supabase SQL editor or a trusted
+-- service-role backend, then all additional platform admins are created by an
+-- existing Super Admin through the application.
+
+create or replace function public.provision_platform_admin(p_email text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_user_id uuid;
+begin
+    if p_email is null or btrim(p_email) = '' then
+        raise exception 'Administrator email is required';
+    end if;
+
+    select id into v_user_id
+    from auth.users
+    where lower(email) = lower(btrim(p_email))
+    limit 1;
+
+    if v_user_id is null then
+        raise exception 'No Supabase Auth user exists for %', btrim(p_email);
+    end if;
+
+    insert into public.profiles(id, email, full_name, avatar_url, status, is_platform_user)
+    select
+        u.id,
+        coalesce(u.email, btrim(p_email)),
+        coalesce(u.raw_user_meta_data ->> 'full_name', u.raw_user_meta_data ->> 'name'),
+        u.raw_user_meta_data ->> 'avatar_url',
+        'active'::public.account_status,
+        true
+    from auth.users u
+    where u.id = v_user_id
+    on conflict (id) do update set
+        email = excluded.email,
+        full_name = coalesce(excluded.full_name, public.profiles.full_name),
+        avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+        status = 'active'::public.account_status,
+        is_platform_user = true,
+        updated_at = now();
+
+    return v_user_id;
+end;
+$$;
+
+revoke all on function public.provision_platform_admin(text) from public;
+grant execute on function public.provision_platform_admin(text) to service_role;
+
+-- ============================================================
 -- 15. HELPER: CURRENT USER
 -- ============================================================
 
@@ -594,11 +784,104 @@ as $$
         select 1
         from public.profiles p
         where p.id = auth.uid()
-          and p.is_platform_user = true
+          and (
+              coalesce(p.is_platform_user, false) = true
+          )
     );
 
 $$;
 
+
+-- ============================================================
+-- 16A. SECURE ACCESS CONTEXT FOR CLIENT ROUTING
+-- ============================================================
+
+create or replace function public.get_my_access_context()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+    v_user uuid := auth.uid();
+    v_result jsonb;
+begin
+    if v_user is null then
+        return null;
+    end if;
+
+    if exists (
+        select 1 from public.profiles p
+        where p.id = v_user and p.is_platform_user = true
+    ) then
+        select jsonb_build_object(
+            'user_id', p.id,
+            'email', p.email,
+            'full_name', coalesce(p.full_name, ''),
+            'tenant_id', null,
+            'role', 'SUPER_ADMIN',
+            'role_name', 'Super Admin'
+        )
+        into v_result
+        from public.profiles p
+        where p.id = v_user;
+        return v_result;
+    end if;
+
+    -- A platform SUPER_ADMIN membership must take precedence over any tenant
+    -- membership. This prevents the client from ever seeing a platform admin
+    -- as a pending Tenant Admin because an older tenant membership exists.
+    if exists (
+        select 1
+        from public.user_tenant_memberships m
+        join public.roles r on r.id = m.role_id
+        where m.user_id = v_user
+          and m.status = 'active'
+          and r.code = 'SUPER_ADMIN'
+          and r.scope = 'platform'
+    ) then
+        select jsonb_build_object(
+            'user_id', p.id,
+            'email', p.email,
+            'full_name', coalesce(p.full_name, ''),
+            'tenant_id', null,
+            'role', 'SUPER_ADMIN',
+            'role_name', 'Super Admin'
+        )
+        into v_result
+        from public.profiles p
+        where p.id = v_user;
+        return v_result;
+    end if;
+
+    select jsonb_build_object(
+        'user_id', v_user,
+        'email', p.email,
+        'full_name', coalesce(p.full_name, ''),
+        'tenant_id', m.tenant_id,
+        'role', r.code,
+        'role_name', r.name
+    )
+    into v_result
+    from public.profiles p
+    left join lateral (
+        select m.tenant_id, m.role_id
+        from public.user_tenant_memberships m
+        where m.user_id = v_user
+          and m.status = 'active'
+        order by m.created_at asc
+        limit 1
+    ) m on true
+    left join public.roles r on r.id = m.role_id
+    where p.id = v_user;
+
+    return v_result;
+end;
+$$;
+
+revoke all on function public.get_my_access_context() from public;
+grant execute on function public.get_my_access_context() to authenticated;
 
 -- ============================================================
 -- 17. HELPER: TENANT MEMBERSHIP
@@ -832,6 +1115,8 @@ alter table public.audit_logs enable row level security;
 -- 24. PROFILE POLICIES
 -- ============================================================
 
+drop policy if exists "users can read own profile" on public.profiles;
+
 create policy "users can read own profile"
 on public.profiles
 for select
@@ -841,6 +1126,8 @@ using (
     or public.is_super_admin()
 );
 
+
+drop policy if exists "users can update own profile" on public.profiles;
 
 create policy "users can update own profile"
 on public.profiles
@@ -853,6 +1140,8 @@ with check (
     id = auth.uid()
 );
 
+
+drop policy if exists "super admin can manage profiles" on public.profiles;
 
 create policy "super admin can manage profiles"
 on public.profiles
@@ -870,6 +1159,8 @@ with check (
 -- 25. TENANT POLICIES
 -- ============================================================
 
+drop policy if exists "members can read tenant" on public.tenants;
+
 create policy "members can read tenant"
 on public.tenants
 for select
@@ -878,6 +1169,8 @@ using (
     public.is_tenant_member(id)
 );
 
+
+drop policy if exists "super admin can manage tenants" on public.tenants;
 
 create policy "super admin can manage tenants"
 on public.tenants
@@ -890,6 +1183,8 @@ with check (
     public.is_super_admin()
 );
 
+
+drop policy if exists "tenant admins can update tenant" on public.tenants;
 
 create policy "tenant admins can update tenant"
 on public.tenants
@@ -907,6 +1202,8 @@ with check (
 -- 26. MEMBERSHIP POLICIES
 -- ============================================================
 
+drop policy if exists "users can view own memberships" on public.user_tenant_memberships;
+
 create policy "users can view own memberships"
 on public.user_tenant_memberships
 for select
@@ -916,6 +1213,8 @@ using (
     or public.is_tenant_admin(tenant_id)
 );
 
+
+drop policy if exists "tenant admins manage memberships" on public.user_tenant_memberships;
 
 create policy "tenant admins manage memberships"
 on public.user_tenant_memberships
@@ -928,6 +1227,8 @@ with check (
     public.is_tenant_admin(tenant_id)
 );
 
+
+drop policy if exists "super admin manages memberships" on public.user_tenant_memberships;
 
 create policy "super admin manages memberships"
 on public.user_tenant_memberships
@@ -945,6 +1246,8 @@ with check (
 -- 27. TENANT SETTINGS
 -- ============================================================
 
+drop policy if exists "members read tenant settings" on public.tenant_settings;
+
 create policy "members read tenant settings"
 on public.tenant_settings
 for select
@@ -953,6 +1256,8 @@ using (
     public.is_tenant_member(tenant_id)
 );
 
+
+drop policy if exists "tenant admin manages settings" on public.tenant_settings;
 
 create policy "tenant admin manages settings"
 on public.tenant_settings
@@ -970,6 +1275,8 @@ with check (
 -- 28. USER PREFERENCES
 -- ============================================================
 
+drop policy if exists "users manage own preferences" on public.user_preferences;
+
 create policy "users manage own preferences"
 on public.user_preferences
 for all
@@ -985,6 +1292,8 @@ with check (
 -- ============================================================
 -- 29. INVITATIONS
 -- ============================================================
+
+drop policy if exists "tenant admins manage invitations" on public.invitations;
 
 create policy "tenant admins manage invitations"
 on public.invitations
@@ -1002,6 +1311,8 @@ with check (
 -- 30. AUDIT LOGS
 -- ============================================================
 
+drop policy if exists "tenant members read tenant audit" on public.audit_logs;
+
 create policy "tenant members read tenant audit"
 on public.audit_logs
 for select
@@ -1010,6 +1321,8 @@ using (
     public.is_tenant_member(tenant_id)
 );
 
+
+drop policy if exists "super admin read all audit" on public.audit_logs;
 
 create policy "super admin read all audit"
 on public.audit_logs
@@ -1024,12 +1337,16 @@ using (
 -- 31. PERMISSIONS ARE READ-ONLY TO APPLICATION USERS
 -- ============================================================
 
+drop policy if exists "authenticated users can read permissions" on public.permissions;
+
 create policy "authenticated users can read permissions"
 on public.permissions
 for select
 to authenticated
 using (true);
 
+
+drop policy if exists "authenticated users can read roles" on public.roles;
 
 create policy "authenticated users can read roles"
 on public.roles
@@ -1041,6 +1358,8 @@ using (
     or public.is_tenant_member(tenant_id)
 );
 
+
+drop policy if exists "authenticated users can read role permissions" on public.role_permissions;
 
 create policy "authenticated users can read role permissions"
 on public.role_permissions
@@ -1085,9 +1404,50 @@ tenants_status_idx
 on public.tenants(status);
 
 
-commit;
 
 
+-- ============================================================
+-- 33A. WORKSPACE / ONBOARDING COMPATIBILITY
+-- ============================================================
+DO $$
+BEGIN
+    IF to_regclass('public.workspaces') IS NOT NULL THEN
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS name text;
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS slug text;
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS is_default boolean DEFAULT false;
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS settings jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+        UPDATE public.workspaces SET settings='{}'::jsonb WHERE settings IS NULL;
+        UPDATE public.workspaces SET status='active' WHERE status IS NULL;
+        UPDATE public.workspaces SET is_default=false WHERE is_default IS NULL;
+        UPDATE public.workspaces SET created_at=now() WHERE created_at IS NULL;
+        UPDATE public.workspaces SET updated_at=now() WHERE updated_at IS NULL;
+    END IF;
+    IF to_regclass('public.workspace_members') IS NOT NULL THEN
+        ALTER TABLE public.workspace_members ADD COLUMN IF NOT EXISTS workspace_id uuid;
+        ALTER TABLE public.workspace_members ADD COLUMN IF NOT EXISTS membership_id uuid;
+        ALTER TABLE public.workspace_members ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+        UPDATE public.workspace_members SET created_at=now() WHERE created_at IS NULL;
+    END IF;
+    IF to_regclass('public.tenant_onboarding') IS NOT NULL THEN
+        ALTER TABLE public.tenant_onboarding ADD COLUMN IF NOT EXISTS tenant_id uuid;
+        ALTER TABLE public.tenant_onboarding ADD COLUMN IF NOT EXISTS step_data jsonb DEFAULT '{}'::jsonb;
+        ALTER TABLE public.tenant_onboarding ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;
+        ALTER TABLE public.tenant_onboarding ADD COLUMN IF NOT EXISTS current_step smallint DEFAULT 0;
+        ALTER TABLE public.tenant_onboarding ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+        UPDATE public.tenant_onboarding SET step_data='{}'::jsonb WHERE step_data IS NULL;
+        UPDATE public.tenant_onboarding SET completed=false WHERE completed IS NULL;
+        UPDATE public.tenant_onboarding SET current_step=0 WHERE current_step IS NULL;
+        UPDATE public.tenant_onboarding SET updated_at=now() WHERE updated_at IS NULL;
+    END IF;
+END $$;
+
+-- ============================================================
+-- ARKA WORKSPACE + ONBOARDING EXTENSIONS
+-- Reference-aligned application model
 -- ============================================================
 
 create table if not exists public.workspaces (
@@ -1131,16 +1491,22 @@ alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
 alter table public.tenant_onboarding enable row level security;
 
+drop policy if exists "members read workspaces" on public.workspaces;
+
 create policy "members read workspaces"
 on public.workspaces
 for select to authenticated
 using (public.is_tenant_member(tenant_id));
+
+drop policy if exists "tenant admins manage workspaces" on public.workspaces;
 
 create policy "tenant admins manage workspaces"
 on public.workspaces
 for all to authenticated
 using (public.is_tenant_admin(tenant_id))
 with check (public.is_tenant_admin(tenant_id));
+
+drop policy if exists "members read workspace memberships" on public.workspace_members;
 
 create policy "members read workspace memberships"
 on public.workspace_members
@@ -1153,6 +1519,8 @@ using (
           and public.is_tenant_member(w.tenant_id)
     )
 );
+
+drop policy if exists "tenant admins manage workspace memberships" on public.workspace_members;
 
 create policy "tenant admins manage workspace memberships"
 on public.workspace_members
@@ -1173,6 +1541,8 @@ with check (
           and public.is_tenant_admin(w.tenant_id)
     )
 );
+
+drop policy if exists "members read onboarding" on public.tenant_onboarding;
 
 create policy "members read onboarding"
 on public.tenant_onboarding
@@ -1327,6 +1697,31 @@ begin
            updated_at = now()
      where id = v_tenant_id;
 
+    -- Keep normalized tenant configuration in tenant_settings while the full
+    -- onboarding snapshot remains in tenant_onboarding.step_data.
+    insert into public.tenant_settings(
+        tenant_id,
+        security_settings,
+        ai_settings,
+        notification_settings,
+        updated_at
+    )
+    values (
+        v_tenant_id,
+        jsonb_build_object(
+            'cloud_presence', coalesce(p_cloud_presence, '[]'::jsonb),
+            'security_technologies', coalesce(p_security_technologies, '[]'::jsonb),
+            'security_stack', coalesce(p_security_stack, '{}'::jsonb),
+            'security_priorities', coalesce(p_security_priorities, '[]'::jsonb)
+        ),
+        '{}'::jsonb,
+        '{}'::jsonb,
+        now()
+    )
+    on conflict (tenant_id) do update set
+        security_settings = excluded.security_settings,
+        updated_at = now();
+
     insert into public.tenant_onboarding(tenant_id, step_data, completed, current_step, updated_at)
     values(v_tenant_id, v_payload, p_completed, p_step, now())
     on conflict(tenant_id) do update set
@@ -1391,5 +1786,27 @@ $$;
 
 revoke all on function public.save_tenant_onboarding(text,text,text,jsonb,jsonb,jsonb,jsonb,smallint,jsonb,boolean) from public;
 grant execute on function public.save_tenant_onboarding(text,text,text,jsonb,jsonb,jsonb,jsonb,smallint,jsonb,boolean) to authenticated;
+
+
+-- ============================================================
+-- 40. FINAL COMPATIBILITY ASSERTIONS
+-- ============================================================
+-- Fail early with a useful message if a partially-existing table could not
+-- be reconciled. This is deliberately after all CREATE/ALTER operations.
+DO $$
+BEGIN
+    IF to_regclass('public.profiles') IS NULL THEN
+        RAISE EXCEPTION 'ARKA setup failed: public.profiles is missing';
+    END IF;
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema='public' AND table_name='profiles' AND column_name='is_platform_user'
+    ) THEN
+        RAISE EXCEPTION 'ARKA setup failed: profiles.is_platform_user is missing';
+    END IF;
+    IF to_regclass('public.user_tenant_memberships') IS NULL THEN
+        RAISE EXCEPTION 'ARKA setup failed: public.user_tenant_memberships is missing';
+    END IF;
+END $$;
 
 commit;

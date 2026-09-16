@@ -1,0 +1,18 @@
+-- ARKA first-login onboarding policy
+--
+-- UI policy:
+--   * There is no standalone /onboarding route.
+--   * /tenant is the only host for the TenantOnboardingOverlay component.
+--   * New authenticated signups with no active tenant membership are treated as
+--     pending Tenant Admins until save_tenant_onboarding creates the tenant and
+--     TENANT_ADMIN membership.
+--   * Existing TENANT_ADMIN users with incomplete onboarding see the overlay.
+--   * SUPER_ADMIN and TENANT_USER users are routed to their own applications.
+--
+-- Database policy:
+--   schema.sql and 003_reference_architecture.sql both contain the hardened
+--   save_tenant_onboarding function. It rejects platform admins and TENANT_USER
+--   members before any tenant can be created.
+--
+-- No additional DDL is required for this migration. Keep this migration in the
+-- deployment sequence so the intended application/RBAC contract is explicit.

@@ -1,0 +1,8 @@
+ARKA V45 — Platform Module Surfaces
+
+- Reworked Users, Apps, Roles & Permissions, Audit Logs, empty states and placeholder modules.
+- Fixed table column spacing and hierarchy that caused concatenated-looking values.
+- Added coherent graphite/ivory surfaces with sage + copper accents in both themes.
+- Added hover depth, status chips, entity hierarchy, audit rails and intentional empty states.
+- Search and refresh controls now belong visually to the command-deck system.
+- No database changes.

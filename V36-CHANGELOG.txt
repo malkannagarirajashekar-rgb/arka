@@ -1,0 +1,23 @@
+ARKA V36
+=========
+
+UI-only refinement on top of V35.
+
+ADMIN
+- New platform control-plane visual system.
+- Dark and light themes now fully style sidebar, header, hero, metrics, tables, panels and role cards.
+- More distinct hierarchy, grid texture, telemetry styling and responsive behavior.
+- Existing live Supabase tenant/user/app/audit queries retained.
+
+ONBOARDING
+- New Context Studio layout.
+- Desktop uses a dedicated vertical step rail and separate form workspace.
+- Distinct modal/backdrop treatment.
+- Full light-theme counterpart added.
+- Existing onboarding persistence/RBAC logic retained.
+
+THEME
+- ThemeToggle continues to persist `arka-theme` in localStorage.
+- V36 adds the missing page-specific light-theme rules that previously left the admin main surface dark.
+
+No Supabase migration is required.

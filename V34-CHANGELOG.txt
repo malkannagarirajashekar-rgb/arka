@@ -1,0 +1,16 @@
+ARKA V34 — LIVE PLATFORM CONTROL PLANE + LOGIN/ONBOARDING POLISH
+
+- Fixed email/password submit routing and made the submit button explicit type=submit.
+- Improved post-auth routing recovery when access context is temporarily unavailable.
+- Platform authorization remains UUID/database based; no email is used as a role authority.
+- Removed an invalid/stale `profile` reference from TenantOnboardingOverlay.
+- Refined onboarding copy and modal visual treatment.
+- Rebuilt Super Admin page around live Supabase data.
+- Tenants tab now reads public.tenants and displays real organizations.
+- Users tab reads public.profiles.
+- Apps tab reads public.apps.
+- Audit Logs tab reads public.audit_logs.
+- Overview statistics are derived from live query results; no demo tenant/user/app counts.
+- Added refresh and search controls.
+- Added live database state indicator and graceful query error display.
+- Bumped service-worker cache version to prevent stale frontend routing/UI.

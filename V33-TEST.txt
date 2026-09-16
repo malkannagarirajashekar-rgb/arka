@@ -1,0 +1,27 @@
+ARKA V33 TEST
+
+1. Apply supabase/migrations/20260916_0002_arka_production_rbac.sql after V31/V32.
+
+2. Verify the current platform admin by UUID (replace UUID with the Auth user id):
+   select id,email,role,tenant_id,is_platform_user,status
+   from public.profiles where id='AUTH_USER_UUID';
+
+3. Expected platform-admin state:
+   is_platform_user = true
+   status = active
+   tenant_id = NULL
+
+4. The legacy profiles.role value is not authoritative. It may remain tenant_user.
+
+5. Sign out of ARKA, close the old tab, open the deployed V33 build and sign in
+   with Google or email/password. The platform admin must land on /admin.
+
+6. Create a brand-new Google or email/password account. It must remain pending and
+   enter Tenant onboarding only after authentication; it must not become Super Admin.
+
+7. From an existing Super Admin session, another user can be promoted with:
+   select public.promote_platform_admin('AUTH_USER_UUID');
+
+8. A non-Super-Admin calling promote_platform_admin must receive an authorization error.
+
+9. Never use an email address as the authorization key.

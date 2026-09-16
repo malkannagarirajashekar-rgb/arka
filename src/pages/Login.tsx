@@ -1,25 +1,32 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  Activity,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Eye,
   EyeOff,
-  Layers3,
+  Fingerprint,
   LockKeyhole,
   Mail,
+  ScanLine,
   ShieldCheck,
-  Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Brand } from "../components/Brand";
 import { ThemeToggle } from "../components/ThemeToggle";
-import TempleScene from "../components/TempleScene";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import { getAccessContext, roleRoute } from "../lib/access";
 
 type Mode = "login" | "signup" | "forgot";
+
+const orbitItems = [
+  { label: "IDENTITY", value: "VERIFIED", angle: -26 },
+  { label: "CONTEXT", value: "BOUND", angle: 58 },
+  { label: "TENANT", value: "ISOLATED", angle: 145 },
+  { label: "TRACE", value: "READY", angle: 230 },
+];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -37,38 +44,52 @@ export default function Login() {
   );
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const routingRef = useRef(false);
 
   async function routeAfterAuth() {
+    if (routingRef.current) return;
+    routingRef.current = true;
     try {
-      const access = await getAccessContext();
-      if (!access) {
+      if (!supabase) {
         navigate("/login", { replace: true });
         return;
       }
 
-      if (!access.role) {
-        navigate("/onboarding", { replace: true });
+      // Resolve the platform flag immediately after authentication. This is a
+      // deliberate fast path: an existing platform administrator must never
+      // briefly enter the Tenant Admin bootstrap route because a legacy
+      // profiles.role says tenant_user or because two auth events race.
+      const access = await getAccessContext();
+      if (!access) {
+        routingRef.current = false;
+        setBusy(false);
+        setError("Your account was authenticated, but ARKA could not resolve its platform access yet. Please try again.");
         return;
       }
-
-      if (access.role === "TENANT_ADMIN" && access.tenantId && supabase) {
+      if (access.accessState === "PENDING_TENANT_ONBOARDING") {
+        navigate("/tenant", { replace: true });
+        return;
+      }
+      if (!access.role) {
+        routingRef.current = false;
+        setBusy(false);
+        setError("Your account is signed in, but it has not been assigned an ARKA role yet.");
+        return;
+      }
+      if (access.role === "TENANT_ADMIN" && access.tenantId) {
         const { data, error: onboardingError } = await supabase
           .from("tenant_onboarding")
           .select("completed")
           .eq("tenant_id", access.tenantId)
           .maybeSingle();
-
-        if (onboardingError) {
-          console.warn("Unable to read onboarding status; continuing to tenant workspace.", onboardingError);
-        }
-
+        if (onboardingError) console.warn("Unable to read onboarding status; continuing to tenant workspace.", onboardingError);
         navigate(data?.completed ? roleRoute(access.role) : "/tenant", { replace: true });
         return;
       }
-
       navigate(roleRoute(access.role), { replace: true });
     } catch (e) {
       console.error("Post-login routing failed", e);
+      routingRef.current = false;
       setBusy(false);
       setError(e instanceof Error ? e.message : "Signed in, but Arka could not determine your workspace.");
     }
@@ -80,8 +101,6 @@ export default function Login() {
     setError("");
   }, [initialMode]);
 
-  // Complete an explicit sign-out transition before any existing-session
-  // routing can send the user back into the workspace/onboarding.
   useEffect(() => {
     if (!supabaseConfigured || !supabase || !signedOutTransition) return;
     let mounted = true;
@@ -92,17 +111,12 @@ export default function Login() {
         setSignedOutTransition(false);
       }
     });
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [signedOutTransition]);
 
-  // Supabase is configured to return OAuth sessions to /login. Once the
-  // browser session exists, send the user through the role-aware Arka route.
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return;
     let mounted = true;
-
     async function finishOAuth() {
       const { data, error: sessionError } = await supabase!.auth.getSession();
       if (!mounted) return;
@@ -112,23 +126,12 @@ export default function Login() {
       }
       if (data.session && !sessionStorage.getItem("arka-signed-out")) routeAfterAuth();
     }
-
     finishOAuth();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (!mounted) return;
-      if (
-        session &&
-        !sessionStorage.getItem("arka-signed-out") &&
-        ["SIGNED_IN", "INITIAL_SESSION", "TOKEN_REFRESHED"].includes(event)
-      ) {
-        routeAfterAuth();
-      }
+      if (!sessionStorage.getItem("arka-signed-out") && ["SIGNED_IN", "INITIAL_SESSION", "TOKEN_REFRESHED"].includes(event)) routeAfterAuth();
     });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, [navigate]);
 
   function switchMode(next: Mode) {
@@ -147,41 +150,26 @@ export default function Login() {
   async function continueWithGoogle() {
     setMessage("");
     setError("");
-
     if (!supabaseConfigured || !supabase) {
       setError("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.");
       return;
     }
-
     setBusy(true);
-
     const redirectTo = `${window.location.origin}/login`;
     try {
       const { data, error: authError } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo,
-          queryParams: {
-            access_type: "offline",
-            prompt: "select_account",
-          },
-        },
+        options: { redirectTo, queryParams: { access_type: "offline", prompt: "select_account" } },
       });
-
       if (authError) {
         setBusy(false);
         setError(`Google sign-in failed: ${authError.message}`);
         return;
       }
-
-      // Supabase normally redirects automatically. Explicitly navigating to
-      // the returned OAuth URL makes the action reliable across browsers and
-      // avoids a silent no-op if the client cannot perform the navigation.
       if (data?.url) {
         window.location.assign(data.url);
         return;
       }
-
       setBusy(false);
       setError("Google sign-in did not return an authentication URL. Check that Google is enabled in Supabase Authentication → Providers.");
     } catch (oauthError) {
@@ -194,22 +182,17 @@ export default function Login() {
     event.preventDefault();
     setMessage("");
     setError("");
-
     if (!supabaseConfigured || !supabase) {
       setError("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.");
       return;
     }
-
     if (mode === "signup") {
       if (!fullName.trim()) return setError("Please enter your full name.");
       if (!validatePassword(password)) return setError("Password must be at least 8 characters and contain a letter and a number.");
       if (password !== confirm) return setError("Passwords do not match.");
     }
-
     if (mode !== "forgot" && !email.trim()) return setError("Please enter your email address.");
-
     setBusy(true);
-
     if (mode === "login") {
       sessionStorage.removeItem("arka-signed-out");
       setSignedOutTransition(false);
@@ -218,13 +201,12 @@ export default function Login() {
       if (authError) {
         const lower = authError.message.toLowerCase();
         if (lower.includes("email not confirmed")) return setError("Your email is not verified yet. Check your inbox.");
-        if (lower.includes("invalid login credentials")) return setError("Email or password is incorrect.");
+        if (lower.includes("invalid login credentials")) return setError("Email or password is incorrect. If this account was created with Google, use the Google button instead.");
         return setError(authError.message);
       }
       await routeAfterAuth();
       return;
     }
-
     if (mode === "signup") {
       const redirectTo = `${window.location.origin}/login?verified=1`;
       const { data, error: authError } = await supabase.auth.signUp({
@@ -249,7 +231,6 @@ export default function Login() {
       }
       return;
     }
-
     const redirectTo = `${window.location.origin}/login?mode=login`;
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     setBusy(false);
@@ -257,103 +238,104 @@ export default function Login() {
     setMessage("If an account exists for that email, a password-reset link has been sent.");
   }
 
-  const eyebrow = mode === "login" ? "WELCOME BACK" : mode === "signup" ? "NEW SECURE IDENTITY" : "RECOVER ACCESS";
-  const title = mode === "login" ? <>Sign in to <em>Arka</em></> : mode === "signup" ? <>Create your <em>identity</em></> : <>Restore your <em>access</em></>;
+  const eyebrow = mode === "login" ? "RETURNING IDENTITY" : mode === "signup" ? "CREATE IDENTITY" : "ACCESS RECOVERY";
+  const title = mode === "login" ? <>Enter your <em>context.</em></> : mode === "signup" ? <>Create your <em>identity.</em></> : <>Restore your <em>access.</em></>;
 
   return (
-    <main className="arka-temple-login guardian-login-gate">
-      <div className="temple-login-bg" />
-      <div className="temple-login-grid" />
+    <main className="arka-access-page">
+      <div className="access-noise" />
+      <div className="access-grid" />
+      <div className="access-corner access-corner-tl" />
+      <div className="access-corner access-corner-br" />
 
-      <Link className="temple-login-back" to="/">
-        <ArrowLeft size={16} /> Return to the perimeter
-      </Link>
+      <header className="access-header">
+        <Link className="access-brand" to="/"><Brand /></Link>
+        <div className="access-header-right">
+          <span className="access-live"><i /> ARKA IDENTITY SYSTEM</span>
+          <ThemeToggle />
+        </div>
+      </header>
 
-      <div className="temple-login-layout">
-        <section className="temple-login-scene">
-          <div className="temple-login-brand"><Brand /></div>
-          <div className="temple-login-copy">
-            <div className="temple-kicker"><span /> GUARDIAN GATE / GATE I</div>
-            <h1>The perimeter<br /><em>recognizes you.</em></h1>
-            <p>Authenticate your identity to enter the organization context protected by your account.</p>
+      <Link className="access-back" to="/"><ArrowLeft size={15} /> Back to Arka</Link>
+
+      <div className="access-layout">
+        <section className="access-intro">
+          <div className="access-kicker"><span /> SECURE ACCESS / {mode === "login" ? "01" : mode === "signup" ? "02" : "03"}</div>
+          <h1>Security<br /><span>needs</span><br />context<span>.</span></h1>
+          <p className="access-description">Arka connects identity, people, systems and signals before revealing the workspace behind them.</p>
+
+          <div className="access-orbit-wrap" aria-hidden="true">
+            <motion.div className="access-orbit access-orbit-one" animate={{ rotate: 360 }} transition={{ duration: 28, repeat: Infinity, ease: "linear" }} />
+            <motion.div className="access-orbit access-orbit-two" animate={{ rotate: -360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} />
+            <motion.div className="access-orbit access-orbit-three" animate={{ rotate: 360 }} transition={{ duration: 42, repeat: Infinity, ease: "linear" }} />
+            {orbitItems.map((item) => (
+              <motion.div
+                key={item.label}
+                className="access-orbit-label"
+                style={{ "--angle": `${item.angle}deg` } as React.CSSProperties}
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, delay: item.angle / 100, ease: "easeInOut" }}
+              >
+                <small>{item.label}</small><strong>{item.value}</strong>
+              </motion.div>
+            ))}
+            <motion.div className="access-core" animate={{ scale: [1, 1.04, 1], boxShadow: ["0 0 0 0 rgba(151,255,86,.0)", "0 0 0 18px rgba(151,255,86,.08)", "0 0 0 0 rgba(151,255,86,.0)"] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
+              <Fingerprint size={31} strokeWidth={1.25} />
+              <span>ARKA</span>
+            </motion.div>
+            <motion.div className="access-scan" animate={{ rotate: 360 }} transition={{ duration: 7, repeat: Infinity, ease: "linear" }}><ScanLine size={16} /></motion.div>
           </div>
-          <TempleScene mode="login" compact onAction={(label) => setError(`${label} seal selected.`)} />
-          <div className="temple-login-note"><ShieldCheck size={15} /><span>Identity is verified before ARKA reveals your protected workspace.</span></div>
+
+          <div className="access-metrics">
+            <div><span>01</span><strong>IDENTITY</strong><small>verified first</small></div>
+            <div><span>02</span><strong>CONTEXT</strong><small>bound to tenant</small></div>
+            <div><span>03</span><strong>TRACE</strong><small>ready to follow</small></div>
+          </div>
         </section>
 
-        <motion.form
-          className="temple-login-card"
-          onSubmit={submit}
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          key={mode}
-        >
-          <div className="temple-login-card-head">
-            <div className="temple-seal-icon"><ShieldCheck size={21} /></div>
-            <ThemeToggle />
+        <motion.section className="access-panel" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease: [0.22, 1, 0.36, 1] }} key={mode}>
+          <div className="access-panel-top">
+            <div><span className="panel-dot" /> GATE / {mode === "login" ? "01" : mode === "signup" ? "02" : "03"}</div>
+            <span>SECURE CHANNEL</span>
           </div>
 
-          <div className="login-eyebrow"><span /> {eyebrow}</div>
-          <h2>{title}</h2>
-          <p className="login-subtitle">{mode === "login" ? "Access your secure workspace" : mode === "signup" ? "Create your secure workspace identity" : "Enter your email to regain access"}</p>
+          <div className="access-panel-heading">
+            <div className="access-panel-icon"><ShieldCheck size={20} /></div>
+            <div><small>{eyebrow}</small><h2>{title}</h2></div>
+          </div>
+          <p className="access-panel-subtitle">{mode === "login" ? "Continue to your protected organization workspace." : mode === "signup" ? "Establish the identity Arka will use to build your context." : "We'll send a secure link to restore your identity."}</p>
 
-          {mode === "signup" && (
-            <label>Full name
-              <div className="field-shell"><input className="login-input" value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Your full name" autoComplete="name" required /></div>
-            </label>
-          )}
+          <form onSubmit={submit} className="access-form">
+            {mode === "signup" && <label>Full name<div className="access-field"><Activity size={17} /><input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Your full name" autoComplete="name" required /></div></label>}
+            <label>Email<div className="access-field"><Mail size={17} /><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@company.com" autoComplete="email" required /></div></label>
+            {mode !== "forgot" && <label>Password<div className="access-field"><LockKeyhole size={17} /><input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="••••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"} required /><button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>{mode === "signup" && <small>8+ characters · letter + number</small>}</label>}
+            {mode === "signup" && <label>Confirm password<div className="access-field"><LockKeyhole size={17} /><input value={confirm} onChange={(e) => setConfirm(e.target.value)} type={showPassword ? "text" : "password"} placeholder="••••••••••" autoComplete="new-password" required /></div></label>}
 
-          <label>Email
-            <div className="field-shell field-with-icon"><Mail className="field-icon" size={19} /><input className="login-input" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@company.com" autoComplete="email" required /></div>
-          </label>
+            {mode === "login" && <button type="button" className="access-forgot" onClick={() => switchMode("forgot")}>Forgot password?</button>}
+            {error && <p className="access-message access-error" role="alert">{error}</p>}
+            {message && <p className="access-message access-success" role="status"><CheckCircle2 size={14} /> {message}</p>}
 
-          {mode !== "forgot" && (
-            <label>Password
-              <div className="field-shell password-field field-with-icon">
-                <LockKeyhole className="field-icon" size={19} />
-                <input className="login-input" value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="••••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"} required />
-                <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {mode === "signup" && <small>8+ characters · letter + number</small>}
-            </label>
-          )}
+            <motion.button type="submit" className="access-submit" disabled={busy} whileHover={{ x: 4 }} whileTap={{ scale: .985 }}>
+              <span>{busy ? "Securing channel…" : mode === "login" ? "Enter Arka" : mode === "signup" ? "Create identity" : "Send reset link"}</span><ArrowRight size={18} />
+            </motion.button>
+          </form>
 
-          {mode === "signup" && (
-            <label>Confirm password
-              <div className="field-shell"><input className="login-input" value={confirm} onChange={(e) => setConfirm(e.target.value)} type={showPassword ? "text" : "password"} placeholder="••••••••••" autoComplete="new-password" required /></div>
-            </label>
-          )}
+          {(mode === "login" || mode === "signup") && <>
+            <div className="access-or"><span /> <b>OR CONTINUE WITH</b> <span /></div>
+            <button type="button" className="access-google" onClick={(event) => { event.preventDefault(); void continueWithGoogle(); }} disabled={busy}><b>G</b><span>{busy ? "Connecting…" : "Google"}</span><ArrowRight size={15} /></button>
+          </>}
 
-          {mode === "login" && <button type="button" className="forgot-link" onClick={() => switchMode("forgot")}>Forgot password?</button>}
-          {error && <p className="login-error" role="alert">{error}</p>}
-          {message && <p className="login-success" role="status"><CheckCircle2 size={14} /> {message}</p>}
-
-          <button className="login-submit temple-submit" disabled={busy}>
-            {busy ? "Opening Guardian Gate…" : mode === "login" ? <>Enter Guardian Gate <ArrowRight size={19} /></> : mode === "signup" ? <>Create identity <ArrowRight size={19} /></> : <>Send reset link <ArrowRight size={19} /></>}
-          </button>
-
-          <div className="login-divider"><span /> OR <span /></div>
-          {(mode === "login" || mode === "signup") && (
-            <button type="button" className="google-button temple-google" onClick={(event) => { event.preventDefault(); void continueWithGoogle(); }} disabled={busy}>
-              <b>G</b> {busy ? "Connecting…" : "Continue with Google"}
-            </button>
-          )}
-
-          <div className="auth-switch">
-            {mode === "login" && <>Don’t have an account? <button type="button" onClick={() => switchMode("signup")}>Create account</button></>}
-            {mode === "signup" && <>Already have an account? <button type="button" onClick={() => switchMode("login")}>Sign in</button></>}
-            {mode === "forgot" && <>Remember your password? <button type="button" onClick={() => switchMode("login")}>Sign in</button></>}
+          <div className="access-switch">
+            {mode === "login" && <>New to Arka? <button type="button" onClick={() => switchMode("signup")}>Create account</button></>}
+            {mode === "signup" && <>Already have an identity? <button type="button" onClick={() => switchMode("login")}>Sign in</button></>}
+            {mode === "forgot" && <>Remembered your password? <button type="button" onClick={() => switchMode("login")}>Return to sign in</button></>}
           </div>
 
-          <div className="supabase-note"><LockKeyhole size={17} /><span>Authentication is handled by Supabase. Your organization context stays behind the Guardian identity boundary.</span></div>
-        </motion.form>
+          <div className="access-footnote"><LockKeyhole size={14} /><span>Supabase handles authentication. Organization context remains behind the tenant identity boundary.</span></div>
+        </motion.section>
       </div>
+
+      <footer className="access-footer"><span>ARKA / SECURITY INTELLIGENCE</span><span><i /> ENCRYPTED ENTRY</span><span>GATE {mode === "login" ? "01" : mode === "signup" ? "02" : "03"}</span></footer>
     </main>
   );
-}
-
-function Feature({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
-  return <div className="login-feature"><div>{icon}</div><strong>{title}</strong><span>{sub}</span></div>;
 }

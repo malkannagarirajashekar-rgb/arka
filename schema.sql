@@ -247,6 +247,8 @@ create table if not exists public.role_permissions (
 
 -- ============================================================
 -- 7. USER → TENANT MEMBERSHIP
+-- This table is required by every access/RLS helper below. It is created before
+-- any function that references it, preventing relation-not-found failures.
 -- ============================================================
 
 create table if not exists public.user_tenant_memberships (
@@ -554,6 +556,61 @@ execute function public.handle_new_user();
 
 
 -- ============================================================
+-- 15A. PLATFORM ADMIN BOOTSTRAP (SERVICE ROLE / SQL EDITOR ONLY)
+-- ============================================================
+-- The public signup flow can never grant SUPER_ADMIN. Provision the first
+-- platform administrator explicitly from the Supabase SQL editor or a trusted
+-- service-role backend, then all additional platform admins are created by an
+-- existing Super Admin through the application.
+
+create or replace function public.provision_platform_admin(p_email text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_user_id uuid;
+begin
+    if p_email is null or btrim(p_email) = '' then
+        raise exception 'Administrator email is required';
+    end if;
+
+    select id into v_user_id
+    from auth.users
+    where lower(email) = lower(btrim(p_email))
+    limit 1;
+
+    if v_user_id is null then
+        raise exception 'No Supabase Auth user exists for %', btrim(p_email);
+    end if;
+
+    insert into public.profiles(id, email, full_name, avatar_url, status, is_platform_user)
+    select
+        u.id,
+        coalesce(u.email, btrim(p_email)),
+        coalesce(u.raw_user_meta_data ->> 'full_name', u.raw_user_meta_data ->> 'name'),
+        u.raw_user_meta_data ->> 'avatar_url',
+        'active'::public.account_status,
+        true
+    from auth.users u
+    where u.id = v_user_id
+    on conflict (id) do update set
+        email = excluded.email,
+        full_name = coalesce(excluded.full_name, public.profiles.full_name),
+        avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+        status = 'active'::public.account_status,
+        is_platform_user = true,
+        updated_at = now();
+
+    return v_user_id;
+end;
+$$;
+
+revoke all on function public.provision_platform_admin(text) from public;
+grant execute on function public.provision_platform_admin(text) to service_role;
+
+-- ============================================================
 -- 15. HELPER: CURRENT USER
 -- ============================================================
 
@@ -622,6 +679,32 @@ begin
     if exists (
         select 1 from public.profiles p
         where p.id = v_user and p.is_platform_user = true
+    ) then
+        select jsonb_build_object(
+            'user_id', p.id,
+            'email', p.email,
+            'full_name', coalesce(p.full_name, ''),
+            'tenant_id', null,
+            'role', 'SUPER_ADMIN',
+            'role_name', 'Super Admin'
+        )
+        into v_result
+        from public.profiles p
+        where p.id = v_user;
+        return v_result;
+    end if;
+
+    -- A platform SUPER_ADMIN membership must take precedence over any tenant
+    -- membership. This prevents the client from ever seeing a platform admin
+    -- as a pending Tenant Admin because an older tenant membership exists.
+    if exists (
+        select 1
+        from public.user_tenant_memberships m
+        join public.roles r on r.id = m.role_id
+        where m.user_id = v_user
+          and m.status = 'active'
+          and r.code = 'SUPER_ADMIN'
+          and r.scope = 'platform'
     ) then
         select jsonb_build_object(
             'user_id', p.id,
@@ -1150,7 +1233,6 @@ tenants_status_idx
 on public.tenants(status);
 
 
-commit;
 
 
 -- ============================================================
@@ -1278,6 +1360,24 @@ declare
 begin
     if v_user is null then raise exception 'Authentication required'; end if;
 
+    -- Onboarding is a tenant-admin bootstrap operation only. Platform admins
+    -- and ordinary tenant users must never be able to invoke it. A user with
+    -- no active tenant membership is the one allowed pending-signup case;
+    -- the RPC will create that user's tenant + TENANT_ADMIN membership.
+    if public.is_super_admin() then
+        raise exception 'Platform admins cannot complete tenant onboarding';
+    end if;
+    if exists (
+        select 1
+        from public.user_tenant_memberships m
+        join public.roles r on r.id = m.role_id
+        where m.user_id = v_user
+          and m.status = 'active'
+          and r.code = 'TENANT_USER'
+    ) then
+        raise exception 'Tenant users cannot complete organization onboarding';
+    end if;
+
     select * into v_profile from public.profiles where id = v_user;
     if v_profile.id is null then raise exception 'Profile not found'; end if;
 
@@ -1377,6 +1477,31 @@ begin
            updated_at = now()
      where id = v_tenant_id;
 
+    -- Keep normalized tenant configuration in tenant_settings while the full
+    -- onboarding snapshot remains in tenant_onboarding.step_data.
+    insert into public.tenant_settings(
+        tenant_id,
+        security_settings,
+        ai_settings,
+        notification_settings,
+        updated_at
+    )
+    values (
+        v_tenant_id,
+        jsonb_build_object(
+            'cloud_presence', coalesce(p_cloud_presence, '[]'::jsonb),
+            'security_technologies', coalesce(p_security_technologies, '[]'::jsonb),
+            'security_stack', coalesce(p_security_stack, '{}'::jsonb),
+            'security_priorities', coalesce(p_security_priorities, '[]'::jsonb)
+        ),
+        '{}'::jsonb,
+        '{}'::jsonb,
+        now()
+    )
+    on conflict (tenant_id) do update set
+        security_settings = excluded.security_settings,
+        updated_at = now();
+
     insert into public.tenant_onboarding(tenant_id, step_data, completed, current_step, updated_at)
     values(v_tenant_id, v_payload, p_completed, p_step, now())
     on conflict(tenant_id) do update set
@@ -1443,3 +1568,7 @@ revoke all on function public.save_tenant_onboarding(text,text,text,jsonb,jsonb,
 grant execute on function public.save_tenant_onboarding(text,text,text,jsonb,jsonb,jsonb,jsonb,smallint,jsonb,boolean) to authenticated;
 
 commit;
+
+-- ARKA V33 NOTE: production authorization is finalized by
+-- supabase/migrations/20260916_0002_arka_production_rbac.sql.
+-- Do not use email/provider metadata as a role source.

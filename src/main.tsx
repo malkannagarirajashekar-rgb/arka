@@ -20,9 +20,21 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 
+if ("serviceWorker" in navigator && import.meta.env.DEV) {
+  // A previously installed production worker can otherwise continue controlling
+  // localhost and make development appear stuck on an older ARKA bundle.
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  }).catch(() => {});
+}
+
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {
+    navigator.serviceWorker.register("/sw.js?v=39").then((registration) => {
+      // Force an update check so an older ARKA shell cannot keep stale routing
+      // code after a deployment.
+      registration.update().catch(() => {});
+    }).catch(() => {
       // PWA is progressive enhancement; the app remains fully usable without it.
     });
   });

@@ -1,0 +1,8 @@
+V39 — TRUE ONBOARDING MODAL + DEV CACHE REPAIR
+
+- Portal onboarding into document.body.
+- Hard modal geometry and stacking layer at the end of CSS.
+- Tenant Admin shell remains mounted underneath.
+- Dark/light theme styling corrected for the onboarding modal.
+- DEV service worker unregister prevents stale localhost bundles.
+- Preserves V37 onboarding RPC and V33 production RBAC.

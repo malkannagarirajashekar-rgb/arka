@@ -1,0 +1,14 @@
+ARKA V33 — PRODUCTION RBAC HARDENING
+
+- Database is the sole authorization authority.
+- Removed frontend role decisions from Google/email user metadata.
+- get_my_access_context() resolves access from auth.uid() + database state.
+- is_platform_user=true + active is authoritative Super Admin access.
+- Fresh profiles remain pending until tenant onboarding; no stored role is inferred.
+- Email-based provision_platform_admin(text) was removed.
+- Bootstrap now uses provision_platform_admin(uuid), service-role only.
+- Existing Super Admins can promote/demote by Auth UUID via secure RPCs.
+- Ordinary users cannot modify is_platform_user, role, tenant_id, or status.
+- Membership role/tenant integrity is enforced by a database trigger.
+- Tenant onboarding is permitted only for pending bootstrap users or Tenant Admin memberships.
+- No personal email address is hard-coded in application source or V33 migration.

@@ -1,0 +1,8 @@
+ARKA V44 — Tenant Registry Cohesion
+
+- Rebuilt the Super Admin Tenant Registry as a first-class command-deck page.
+- Open tenant registry now lands on a visually consistent live registry surface.
+- Added live tenant metrics, directory, sync action, empty state, and responsive layout.
+- Added matching dark/light theme rules using graphite/ivory + sage/copper accents.
+- Preserved existing Supabase live queries and RBAC.
+- No SQL migration required.

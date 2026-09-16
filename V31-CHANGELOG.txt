@@ -1,0 +1,13 @@
+V31 — CURRENT-SCHEMA COMPATIBILITY FIX
+
+Based on the Supabase schema screenshot supplied by the user.
+
+Observed existing schema:
+- profiles.role uses app_role
+- profiles.tenant_id exists
+- tenants already exists
+- apps already exists
+
+The previous migration incorrectly assumed the existing profiles table had the new `is_platform_user` column. This version explicitly adds it with IF NOT EXISTS and preserves the existing legacy role model.
+
+The migration also backfills legacy profiles.role + profiles.tenant_id into the new user_tenant_memberships/RBAC model.

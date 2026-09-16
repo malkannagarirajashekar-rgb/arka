@@ -1,0 +1,9 @@
+ARKA V43 — ADMIN LAYOUT REPAIR
+
+- Fixed the Admin root container to use a proper horizontal flex layout.
+- Sidebar is now a full-height 252px control-plane rail instead of participating in normal document flow.
+- Main Admin content now occupies the remaining viewport width.
+- Preserved V42 warm graphite/umber/copper palette.
+- Preserved live Supabase queries and RBAC logic.
+- Corrected toolbar/content width so DATABASE-BACKED VIEW and search/refresh stay aligned.
+- No database migration required.

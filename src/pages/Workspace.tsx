@@ -64,9 +64,11 @@ export default function Workspace() {
         const access = await getAccessContext();
         if (!access) { navigate("/login", { replace: true }); return; }
         if (access.role === "SUPER_ADMIN") { navigate("/admin", { replace: true }); return; }
-        if (!access.tenantId) { navigate("/onboarding", { replace: true }); return; }
+        // Tenant Admin onboarding is hosted only by /tenant. A workspace should
+        // never render or route users into a standalone onboarding page.
+        if (!access.tenantId) { navigate(access.role === "TENANT_ADMIN" ? "/tenant" : "/login", { replace: true }); return; }
         const { data: ob } = await supabase.from("tenant_onboarding").select("completed,step_data").eq("tenant_id", access.tenantId).maybeSingle();
-        if (!ob?.completed) { navigate("/onboarding", { replace: true }); return; }
+        if (!ob?.completed) { navigate(access.role === "TENANT_ADMIN" ? "/tenant" : "/login", { replace: true }); return; }
         const { data: appRows, error: appsError } = await supabase.from("apps").select("id,name,slug,status").eq("tenant_id", access.tenantId).order("created_at", { ascending: false });
         if (appsError) throw appsError;
         setProfile({ full_name: access.fullName, role: access.role === "TENANT_ADMIN" ? "tenant_admin" : "tenant_user", tenant_id: access.tenantId });

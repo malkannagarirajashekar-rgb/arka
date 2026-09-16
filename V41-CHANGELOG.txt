@@ -1,0 +1,7 @@
+ARKA V41
+
+- Reworked Super Admin Overview into a distinct command-console visual system.
+- Palette: warm charcoal/ivory, sage, muted terracotta; no green-on-green UI.
+- Light theme has a full Admin-specific palette.
+- Improved toolbar/search/refresh, KPI cards, hero, activity and platform-state modules.
+- Added 20260916_0004_arka_onboarding_schema_compat.sql to repair the existing tenant_onboarding schema mismatch reported by the UI.
