@@ -10,10 +10,10 @@ export function PublicNav() {
     <header className="public-nav">
       <Brand />
       <nav className={open ? "mobile-open" : ""}>
-        <a href="#system" onClick={() => setOpen(false)}>System</a>
-        <a href="#architecture" onClick={() => setOpen(false)}>Architecture</a>
-        <a href="#platform" onClick={() => setOpen(false)}>Platform</a>
-        <a href="#access" onClick={() => setOpen(false)}>Access</a>
+        <a href="#method" onClick={() => setOpen(false)}>Method</a>
+        <a href="#blueprint" onClick={() => setOpen(false)}>Blueprint</a>
+        <a href="#surfaces" onClick={() => setOpen(false)}>Surfaces</a>
+        <a href="#trace" onClick={() => setOpen(false)}>Trace</a>
       </nav>
       <div className="nav-actions">
         <ThemeToggle />

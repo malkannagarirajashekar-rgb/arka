@@ -17,8 +17,10 @@ import {
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import { getAccessContext } from "../lib/access";
 import { Brand } from "../components/Brand";
 import { ThemeToggle } from "../components/ThemeToggle";
+import TempleScene from "../components/TempleScene";
 
 type Role = "tenant_admin" | "tenant_user";
 
@@ -57,61 +59,19 @@ export default function Workspace() {
     let mounted = true;
 
     async function loadWorkspace() {
-      if (!supabaseConfigured || !supabase) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (!mounted) return;
-
-      if (userError || !user) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      const { data: currentProfile, error: profileError } = await supabase
-        .from("profiles")
-        .select("full_name, role, tenant_id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!mounted) return;
-      if (profileError || !currentProfile) {
-        setError(profileError?.message || "No Arka profile exists for this account.");
-        setLoading(false);
-        return;
-      }
-
-      const role = currentProfile.role as Profile["role"];
-
-      // Super admins belong in the global admin console, while tenant users
-      // and tenant admins stay inside the tenant-scoped workspace.
-      if (role === "super_admin") {
-        navigate("/admin", { replace: true });
-        return;
-      }
-
-      const { data: appRows, error: appsError } = await supabase
-        .from("apps")
-        .select("id, name, slug, status")
-        .order("created_at", { ascending: false });
-
-      if (!mounted) return;
-      if (appsError) {
-        setError(appsError.message);
-        setLoading(false);
-        return;
-      }
-
-      setProfile({
-        full_name: currentProfile.full_name,
-        role,
-        tenant_id: currentProfile.tenant_id,
-      });
-      setApps((appRows ?? []) as AppRecord[]);
-      setEmail(user.email ?? "");
-      setLoading(false);
+      if (!supabaseConfigured || !supabase) { navigate("/login", { replace: true }); return; }
+      try {
+        const access = await getAccessContext();
+        if (!access) { navigate("/login", { replace: true }); return; }
+        if (access.role === "SUPER_ADMIN") { navigate("/admin", { replace: true }); return; }
+        if (!access.tenantId) { navigate("/onboarding", { replace: true }); return; }
+        const { data: ob } = await supabase.from("tenant_onboarding").select("completed,step_data").eq("tenant_id", access.tenantId).maybeSingle();
+        if (!ob?.completed) { navigate("/onboarding", { replace: true }); return; }
+        const { data: appRows, error: appsError } = await supabase.from("apps").select("id,name,slug,status").eq("tenant_id", access.tenantId).order("created_at", { ascending: false });
+        if (appsError) throw appsError;
+        setProfile({ full_name: access.fullName, role: access.role === "TENANT_ADMIN" ? "tenant_admin" : "tenant_user", tenant_id: access.tenantId });
+        setApps((appRows ?? []) as AppRecord[]); setEmail(access.email); setLoading(false);
+      } catch (e) { setError(e instanceof Error ? e.message : "Unable to load workspace."); setLoading(false); }
     }
 
     loadWorkspace();
@@ -236,6 +196,8 @@ export default function Workspace() {
               <b>Operational</b>
             </div>
           </motion.section>
+
+          <section className="workspace-temple-strip"><div className="workspace-temple-intro"><p className="eyebrow"><span/> ARKA / SANCTUM</p><h3>Context at a glance.</h3><span>Select a seal to inspect a connected security layer.</span></div><TempleScene mode="workspace" compact /></section>
 
           <section className="workspace-stats">
             <Metric label="Protected apps" value={String(apps.length).padStart(2, "0")} icon={<AppWindow size={17} />} />

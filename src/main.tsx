@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./styles.css";
 
+const initialTheme = window.localStorage.getItem("arka-theme") || "dark";
+document.documentElement.dataset.theme = initialTheme === "light" ? "light" : "dark";
+
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

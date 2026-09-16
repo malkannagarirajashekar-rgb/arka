@@ -6,8 +6,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import { getAccessContext } from "../lib/access";
 import { Brand } from "../components/Brand";
 import { ThemeToggle } from "../components/ThemeToggle";
+import TempleScene from "../components/TempleScene";
 
 type Role = "super_admin" | "tenant_admin" | "tenant_user";
 
@@ -36,66 +38,18 @@ export default function Admin() {
     let mounted = true;
 
     async function loadUser() {
-      if (!supabaseConfigured || !supabase) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        if (mounted) {
+      if (!supabaseConfigured || !supabase) { navigate("/login", { replace: true }); return; }
+      try {
+        const access = await getAccessContext();
+        if (!access) { setChecking(false); setAccessError("Your authentication session could not be verified."); return; }
+        if (access.role !== "SUPER_ADMIN") {
           setChecking(false);
-          setAccessError(userError?.message || "Your authentication session could not be verified.");
+          navigate(access.role === "TENANT_ADMIN" ? "/tenant" : "/app", { replace: true });
+          return;
         }
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("full_name, role, tenant_id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        if (mounted) {
-          setChecking(false);
-          setAccessError(
-            `Authentication succeeded, but Arka could not read your profile. ${profileError.message}`
-          );
-        }
-        return;
-      }
-
-      if (!profile) {
-        if (mounted) {
-          setChecking(false);
-          setAccessError(
-            "Authentication succeeded, but no Arka profile exists for this account."
-          );
-        }
-        return;
-      }
-
-      const userRole = profile.role as Role;
-
-      if (userRole !== "super_admin") {
-        // Tenant Admin/User dashboards will be added as separate protected routes.
-        if (mounted) {
-          setChecking(false);
-          navigate(
-            userRole === "tenant_admin" ? "/tenant" : "/app",
-            { replace: true }
-          );
-        }
-        return;
-      }
-
-      if (mounted) {
-        setEmail(user.email ?? "");
-        setFullName(profile.full_name ?? "");
-        setRole(userRole);
-        setChecking(false);
+        if (mounted) { setEmail(access.email); setFullName(access.fullName); setRole("super_admin"); setChecking(false); }
+      } catch (e) {
+        if (mounted) { setChecking(false); setAccessError(e instanceof Error ? e.message : "Unable to verify access."); }
       }
     }
 
