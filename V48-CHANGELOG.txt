@@ -1,0 +1,31 @@
+ARKA V48 — PLATFORM USER + ROLE CONTROL
+
+1. Super Admin Users console
+   - Add user / invitation workflow.
+   - Live identity directory sourced from Supabase.
+   - Role counts for Super Admin, Tenant Admin, Tenant User and Pending.
+   - Organization shown for tenant-scoped identities.
+
+2. Role management
+   - Manage button opens a role-control modal.
+   - Assign SUPER_ADMIN, TENANT_ADMIN or TENANT_USER.
+   - Tenant roles require an organization.
+   - Role changes are persisted through database RPC admin_set_user_role().
+   - Self-demotion is blocked.
+   - Role changes are audited.
+
+3. Invitation backend
+   - Added Supabase Edge Function admin-invite-user.
+   - Uses Supabase service role only inside the Edge Function.
+   - Caller is checked against database-backed is_platform_user/status.
+   - Invited identity is provisioned with the selected role and tenant membership.
+
+4. Roles & Permissions
+   - Reworked into a functional authorization command surface.
+   - Shows live role assignment counts.
+   - Shows capability matrix for the three system roles.
+
+5. Safety / compatibility
+   - Existing users, tenants and memberships are preserved.
+   - Existing legacy profiles.role remains untouched as a compatibility field.
+   - Authoritative access continues to come from is_platform_user + active tenant membership.

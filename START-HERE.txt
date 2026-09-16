@@ -11,3 +11,17 @@ For frontend-only changes during local development, use Vite directly (npm run d
 so source changes hot-reload. If using Docker, see docker-compose.yml and use a
 bind-mounted source directory/dev container rather than rebuilding the image for
 every source edit.
+
+
+V48 — SUPER ADMIN USER + ROLE MANAGEMENT
+===========================================
+1. Apply in Supabase SQL Editor:
+   supabase/migrations/20260916_0005_arka_platform_user_management.sql
+2. Deploy the new Edge Function from the project root:
+   supabase functions deploy admin-invite-user
+3. Open /admin -> Users.
+4. Use Add user to invite a new identity, select role and organization.
+5. Use Manage on an existing identity to change its authoritative role.
+6. Roles & Permissions now shows live role counts and the RBAC capability matrix.
+
+IMPORTANT: the invitation function uses the Supabase service-role key only inside the Edge Function. Do not put that key in VITE_* client environment variables.
