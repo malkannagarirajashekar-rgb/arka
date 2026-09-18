@@ -115,7 +115,7 @@ export default function TenantAdmin() {
   const nav = [["Overview", LayoutDashboard], ["Team", Users], ["Applications", AppWindow], ["Integrations", GitBranch], ["Organization", Database], ["Settings", Settings]] as const;
   const stack = context.securityStack ?? {};
 
-  return <div className="workspace workspace-v47">
+  return <div className="workspace workspace-shell workspace-page">
     <aside className={`workspace-sidebar ${sidebar ? "open" : ""}`}>
       <div className="workspace-brand-row"><Brand/><span className="workspace-status"><i/> LIVE</span></div>
       <div className="workspace-role"><ShieldCheck size={13}/><span>TENANT ADMIN</span></div>
@@ -127,39 +127,39 @@ export default function TenantAdmin() {
       <header className="workspace-header"><button className="workspace-menu" onClick={() => setSidebar(v => !v)} aria-label="Open navigation">{sidebar ? <X/> : <Menu/>}</button><div><p className="eyebrow"><span/> ARKA / ORGANIZATION CONTROL</p><h1>{active}</h1></div><div className="workspace-header-actions"><button className="workspace-icon" aria-label="Notifications"><Bell size={17}/><i/></button><ThemeToggle/><div className="workspace-user"><div className="workspace-avatar">{(access.fullName || access.email || "A").charAt(0).toUpperCase()}</div><div><strong>{access.fullName || "Tenant Admin"}</strong><small>{access.email}</small></div></div></div></header>
       <div className="workspace-content">
         {active === "Overview" && <>
-          <motion.section className="workspace-welcome workspace-welcome-v47" initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}>
+          <motion.section className="workspace-welcome workspace-welcome-enhanced" initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}>
             <div className="workspace-welcome-copy">
-              <p className="eyebrow"><span/> WORKSPACE READY <b className="v47-live-label">LIVE</b></p>
+              <p className="eyebrow"><span/> WORKSPACE READY <b className="live-label">LIVE</b></p>
               <h2>Welcome to ARKA, {access.fullName || "Admin"}.</h2>
               <p>Your organization security workspace is connected to the context captured during onboarding.</p>
-              <div className="v47-welcome-meta">
+              <div className="welcome-meta">
                 <span><i/> {tenant.status === "active" ? "Organization active" : `Organization ${tenant.status}`}</span>
                 <span>{context.businessVertical || "Business vertical pending"}</span>
               </div>
             </div>
-            <div className="workspace-command workspace-command-v47"><span className="workspace-command-dot"/><span>WORKSPACE</span><b>{workspaceName}</b><small>SYNCED</small></div>
+            <div className="workspace-command workspace-command-enhanced"><span className="workspace-command-dot"/><span>WORKSPACE</span><b>{workspaceName}</b><small>SYNCED</small></div>
           </motion.section>
 
-          <section className="workspace-stats workspace-stats-v47">
+          <section className="workspace-stats workspace-stats-summary">
             <Metric label="Organization" value={context.organizationName || tenant.name} icon={<Database size={17}/>} meta={context.businessVertical || "Business context"} />
             <Metric label="Cloud environment" value={(context.cloudPresence ?? []).length ? `${(context.cloudPresence ?? []).length} connected` : "Not specified"} icon={<Cloud size={17}/>} meta={(context.cloudPresence ?? []).join(" · ") || "Awaiting environment details"} />
             <Metric label="Security stack" value={Object.values(stack).filter(Boolean).length ? `${Object.values(stack).filter(Boolean).length} configured` : "Starting"} icon={<ShieldCheck size={17}/>} meta={Object.entries(stack).filter(([,v]) => !!v).map(([k]) => k === "edrXdr" ? "EDR/XDR" : k).join(" · ") || "No tools recorded yet"} />
             <Metric label="Context graph" value="SYNC" icon={<Network size={17}/>} meta="Live organization context" good />
           </section>
 
-          <section className="tenant-admin-temple tenant-admin-temple-v47">
-            <div className="v47-section-bar"><div><p className="eyebrow"><span/> GUARDIAN / LIVE CONTEXT</p><h3>Organization context map</h3></div><span className="v47-live-chip"><i/> LIVE</span></div>
+          <section className="tenant-admin-temple tenant-admin-temple-enhanced">
+            <div className="section-bar"><div><p className="eyebrow"><span/> GUARDIAN / LIVE CONTEXT</p><h3>Organization context map</h3></div><span className="live-chip"><i/> LIVE</span></div>
             <TempleScene mode="workspace" compact />
           </section>
 
-          <section className="workspace-grid workspace-grid-v47">
+          <section className="workspace-grid workspace-grid-actions">
             <Panel icon={<Users/>} title="Build your security team" text="Invite security team members to collaborate in ARKA." action="Invite user" onClick={() => setActive("Team")} />
             <Panel icon={<GitBranch/>} title="Connect applications" text="Start building the connected security context for this organization." action="Connect" onClick={() => setActive("Integrations")} />
           </section>
 
-          <section className="workspace-panel workspace-panel-v47 context-panel-v47">
-            <div className="workspace-panel-head"><div><p className="eyebrow"><span/> YOUR ORGANIZATION</p><h3>Initial security context</h3><p className="v47-panel-sub">Live values below are the organization context captured by the onboarding overlay.</p></div><span className="v47-context-state"><i/> {context.organizationName ? "CAPTURED" : "AWAITING SETUP"}</span></div>
-            <div className="welcome-summary welcome-summary-v47">
+          <section className="workspace-panel workspace-panel-v47 context-panel">
+            <div className="workspace-panel-head"><div><p className="eyebrow"><span/> YOUR ORGANIZATION</p><h3>Initial security context</h3><p className="panel-subtitle">Live values below are the organization context captured by the onboarding overlay.</p></div><span className="context-state"><i/> {context.organizationName ? "CAPTURED" : "AWAITING SETUP"}</span></div>
+            <div className="welcome-summary welcome-summary-compact">
               <div><small>Organization</small><strong>{context.organizationName || tenant.name || "—"}</strong></div>
               <div><small>Business vertical</small><strong>{context.businessVertical || "—"}</strong></div>
               <div><small>Organization size</small><strong>{context.organizationSize || "—"}</strong></div>
@@ -167,7 +167,7 @@ export default function TenantAdmin() {
               <div><small>Security technologies</small><strong>{(context.securityTechnologies ?? []).join(" · ") || "—"}</strong></div>
               <div><small>Security priorities</small><strong>{(context.securityPriorities ?? []).join(" · ") || "—"}</strong></div>
             </div>
-            <div className="v47-stack-strip">
+            <div className="stack-strip">
               {[["SIEM",stack.siem],["EDR / XDR",stack.edrXdr],["IAM",stack.iam],["Cloud security",stack.cloudSecurity],["Other",stack.other]].map(([label,value]) => <div key={label}><span>{label}</span><b>{value || "Not specified"}</b></div>)}
             </div>
           </section>
@@ -191,6 +191,6 @@ export default function TenantAdmin() {
   </div>;
 }
 
-function Metric({label,value,icon,meta,good=false}:{label:string;value:string;icon:React.ReactNode;meta:string;good?:boolean}){return <div className="workspace-metric workspace-metric-v47"><div className="metric-icon">{icon}</div><small>{label}</small><strong>{value}</strong><span className={good?"good":""}>{good ? "● All systems nominal" : meta}</span></div>}
+function Metric({label,value,icon,meta,good=false}:{label:string;value:string;icon:React.ReactNode;meta:string;good?:boolean}){return <div className="workspace-metric workspace-metric-compact"><div className="metric-icon">{icon}</div><small>{label}</small><strong>{value}</strong><span className={good?"good":""}>{good ? "● All systems nominal" : meta}</span></div>}
 function Panel({icon,title,text,action,onClick}:{icon:React.ReactNode;title:string;text:string;action:string;onClick:()=>void}){return <div className="workspace-panel"><div className="workspace-panel-head"><div>{icon}<h3>{title}</h3></div></div><p className="panel-copy">{text}</p><button className="button button-ghost" onClick={onClick}>{action}<ArrowRight size={14}/></button></div>}
 function Placeholder({title,text}:{title:string;text:string}){return <section className="workspace-panel"><div className="workspace-panel-head"><div><p className="eyebrow"><span/> TENANT SURFACE</p><h3>{title}</h3></div></div><div className="workspace-empty"><Network size={22}/><strong>{title} is ready.</strong><span>{text}</span></div></section>}

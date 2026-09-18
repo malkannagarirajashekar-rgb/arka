@@ -4,7 +4,18 @@ For the existing ARKA database:
 
 1. Apply `supabase/migrations/20260916_0001_arka_final.sql` if the V31/V32 compatibility migration is not already applied.
 2. Apply `supabase/migrations/20260916_0002_arka_production_rbac.sql`.
-3. Bootstrap the first platform administrator by Auth UUID only (service role):
+3. Bootstrap the first platform administrator by Auth UUID only (service role). The current function signature is `uuid`, not email/text:
+
+```sql
+select id, email, is_platform_user, status
+from public.profiles
+where lower(email) = lower('arka-e2e-superadmin@gmail.com');
+
+-- Copy the returned UUID into this call:
+select public.provision_platform_admin('AUTH_USER_UUID'::uuid);
+```
+
+Do not use double quotes around the email/UUID. In PostgreSQL, double quotes denote identifiers; single quotes denote string literals.
 
 ```sql
 select public.provision_platform_admin('AUTH_USER_UUID');

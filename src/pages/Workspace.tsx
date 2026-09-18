@@ -20,7 +20,7 @@ import { supabase, supabaseConfigured } from "../lib/supabase";
 import { getAccessContext } from "../lib/access";
 import { Brand } from "../components/Brand";
 import { ThemeToggle } from "../components/ThemeToggle";
-import TempleScene from "../components/TempleScene";
+import WorkspaceContext from "../components/WorkspaceContext";
 
 type Role = "tenant_admin" | "tenant_user";
 
@@ -128,7 +128,7 @@ export default function Workspace() {
   const activeApps = apps.filter((app) => app.status === "active").length;
 
   return (
-    <div className="workspace">
+    <div className="workspace-page">
       <aside className={`workspace-sidebar ${sidebar ? "open" : ""}`}>
         <div className="workspace-brand-row">
           <Brand />
@@ -199,7 +199,7 @@ export default function Workspace() {
             </div>
           </motion.section>
 
-          <section className="workspace-temple-strip"><div className="workspace-temple-intro"><p className="eyebrow"><span/> ARKA / SANCTUM</p><h3>Context at a glance.</h3><span>Select a seal to inspect a connected security layer.</span></div><TempleScene mode="workspace" compact /></section>
+          <WorkspaceContext role={profile.role} appCount={apps.length} />
 
           <section className="workspace-stats">
             <Metric label="Protected apps" value={String(apps.length).padStart(2, "0")} icon={<AppWindow size={17} />} />

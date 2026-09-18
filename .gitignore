@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+.yarn-cache/
+
+# Build output
+dist/
+build/
+.next/
+out/
+.vite/
+
+# Test / QA output
+test-results/
+playwright-report/
+blob-report/
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local environment
+#.env
+#.env.local
+#.env.development.local
+#.env.test.local
+#.env.production.local
+#!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Local tooling / caches
+.eslintcache
+.cache/
+.turbo/
+
+# Docker local overrides
+docker-compose.override.yml

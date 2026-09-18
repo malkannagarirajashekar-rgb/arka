@@ -1,0 +1,14 @@
+ARKA V55 — Workspace Inventory UI Repair
+
+Changed:
+- Fixed the Workspace inventory table layout in Super Admin > Organizations > Workspaces.
+- Added an explicit four-column grid matching the table header: Workspace / Organization / Status / Created.
+- Kept the workspace identity block compact and vertically centered.
+- Added subtle row hover treatment consistent with the Super Admin command deck.
+- Added light-theme parity for the workspace table.
+- Added a responsive single-column mobile layout.
+- No database schema or data changes.
+- No routing/auth/RBAC changes.
+
+Root cause:
+The generic admin54 table class did not define grid columns for the workspace table. CSS Grid therefore auto-placed each header/data cell into its own row, producing the stacked labels visible in the screenshot.

@@ -1,0 +1,24 @@
+ARKA V60 — PUBLIC WEBSITE FLOW REDESIGN
+
+What changed
+- Rebuilt the public ARKA website presentation into a new continuous editorial/system format.
+- Removed the previous kx scroll-progress/curtain system from the active Home page.
+- Removed the decorative page progress rail that could visually produce competing vertical bars.
+- Replaced scroll transitions with one-way IntersectionObserver reveal transitions; content remains visible after entering the viewport.
+- Reworked hero into a live context-system map.
+- Reworked Method into a four-stage process track.
+- Reworked Surfaces into an interactive two-column surface grid.
+- Reworked Context into a dedicated interactive relationship canvas.
+- Reworked Trace into a filterable event list with lightweight entrance motion.
+- Reworked Principle and Guardian Gate into cleaner closing compositions.
+- Added responsive layouts and reduced-motion support.
+- Added true dark/light theme variables to the entire new public experience so both themes use the same structure and visual language.
+
+Functionality intentionally preserved
+- Enter ARKA / Sign in routes remain /login.
+- Public navigation anchors remain Method, Blueprint, Surfaces and Trace.
+- Surface selection remains interactive.
+- Next Relationship continues cycling through the six surfaces.
+- Trace filters remain functional.
+- Guardian Gate continues to /login.
+- No Supabase/auth/admin/tenant functionality was changed.

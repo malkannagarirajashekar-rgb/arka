@@ -1,0 +1,17 @@
+ARKA V53 — SUPER ADMIN MODULE THEME PARITY
+
+Fixed Integrations and Settings console surfaces so they use the same
+Super Admin command-deck theme as Overview, Tenants, Users and Roles.
+
+Dark theme:
+- Removed the legacy cream/light module surface from Integrations and Settings.
+- Added dark green/charcoal panel, matching borders, shadows and typography.
+- Matched orbit/ring/core colors to the dark command-deck palette.
+- Matched primary and secondary action buttons to the dark theme.
+
+Light theme:
+- Preserved the warm ivory/cream command-deck treatment.
+- Matched orbit/ring/core colors and button styling to the light theme.
+
+No database, routing, authentication, or component functionality was changed.
+The fix is CSS-scoped to .admin-shell so existing pages are not affected.

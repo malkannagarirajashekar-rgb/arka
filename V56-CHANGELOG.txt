@@ -1,0 +1,13 @@
+ARKA V56 — Tenant Palette + User Directory
+
+Changes:
+- Super Admin now uses the same warm ARKA graphite / sage / copper visual language as Tenant Admin.
+- Theme overrides are scoped to .admin-shell.admin-dark / .admin-light so the tenant/public UI is not changed.
+- Roles & Permissions -> Manage users now opens an all-users identity directory.
+- User directory includes live user search, role filter, organization filter and status visibility.
+- Selecting Manage on a user opens the existing role assignment panel.
+- Add user opens the existing invitation/create-user flow.
+- No new database tables or RPCs are introduced.
+- Existing admin_set_user_role RPC remains the role mutation path.
+
+V57 — Super Admin palette parity with Tenant Admin; retained V56 user directory/RBAC flow.

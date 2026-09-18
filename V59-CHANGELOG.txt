@@ -1,0 +1,17 @@
+ARKA V59 — SUPER ADMIN SIDEBAR PARITY + DISCLOSURE FIX
+
+Changes:
+1. Super Admin sidebar now uses the same warm graphite/copper/sage palette as the Tenant Admin V47 sidebar in dark mode.
+2. Super Admin sidebar light mode uses the matching Tenant Admin warm light rail palette.
+3. Fixed CSS specificity so the older admin-dark sidebar rule can no longer override the new palette.
+4. Sidebar navigation is now a real disclosure menu:
+   - Clicking Organizations / Users / Applications / Integrations / Agents toggles open/closed.
+   - Clicking an already-open parent closes it.
+   - Clicking a child keeps its parent open and selects the child.
+   - Active parent state no longer forcibly re-opens a closed group.
+5. Sidebar menu gets its own scroll area and the health/sign-out block remains pinned to the bottom of the viewport.
+6. No database/schema changes.
+7. Existing user management, role assignment, invitations, tenant registry, application/integration/agent registry and Supabase access logic are unchanged.
+
+Build note:
+The source patch was applied cleanly. This environment did not have node_modules and npm dependency installation timed out, so a full local Vite/TypeScript build could not be completed here.

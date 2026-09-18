@@ -4,9 +4,11 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import TenantAdmin from "./pages/TenantAdmin";
 import Workspace from "./pages/Workspace";
+import { SiteTransition } from "./components/SiteTransition";
 
 export default function App() {
   return (
+    <SiteTransition>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -15,5 +17,6 @@ export default function App() {
       <Route path="/app" element={<Workspace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </SiteTransition>
   );
 }

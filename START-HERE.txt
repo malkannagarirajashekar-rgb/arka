@@ -25,3 +25,7 @@ V48 — SUPER ADMIN USER + ROLE MANAGEMENT
 6. Roles & Permissions now shows live role counts and the RBAC capability matrix.
 
 IMPORTANT: the invitation function uses the Supabase service-role key only inside the Edge Function. Do not put that key in VITE_* client environment variables.
+
+
+V54 SUPER ADMIN CONTROL PLANE
+Run supabase/migrations/20260916_0006_arka_platform_control_plane.sql in Supabase SQL Editor after the existing RBAC migrations. See SUPER-ADMIN-IMPLEMENTATION.md.

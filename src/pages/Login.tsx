@@ -249,7 +249,7 @@ export default function Login() {
       <div className="access-corner access-corner-br" />
 
       <header className="access-header">
-        <Link className="access-brand" to="/"><Brand /></Link>
+        <Brand className="access-brand" />
         <div className="access-header-right">
           <span className="access-live"><i /> ARKA IDENTITY SYSTEM</span>
           <ThemeToggle />
@@ -279,7 +279,7 @@ export default function Login() {
                 <small>{item.label}</small><strong>{item.value}</strong>
               </motion.div>
             ))}
-            <motion.div className="access-core" animate={{ scale: [1, 1.04, 1], boxShadow: ["0 0 0 0 rgba(151,255,86,.0)", "0 0 0 18px rgba(151,255,86,.08)", "0 0 0 0 rgba(151,255,86,.0)"] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
+            <motion.div className="access-core" animate={{ scale: [1, 1.04, 1], boxShadow: ["0 0 0 0 rgba(99,207,255,.0)", "0 0 0 18px rgba(99,207,255,.08)", "0 0 0 0 rgba(99,207,255,.0)"] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
               <Fingerprint size={31} strokeWidth={1.25} />
               <span>ARKA</span>
             </motion.div>

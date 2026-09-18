@@ -1,0 +1,11 @@
+{
+  "cssLines": 6560,
+  "sourceFiles": 15,
+  "sourceClassTokens": 461,
+  "selectorFragments": 2103,
+  "duplicateSelectorFragments": 632,
+  "potentialOrphanSelectorFragments": 0,
+  "legacyColorHits": 0,
+  "legacyColorLines": [],
+  "legacyToneSourceTokens": []
+}

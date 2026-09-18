@@ -1,0 +1,4 @@
+Architecture check: 20 text files scanned
+Legacy iteration-specific naming violations: 0
+Empty top-level CSS blocks detected: 0
+PASS: no targeted legacy iteration-specific class names remain.

@@ -7,16 +7,16 @@ import {
 
 type GuardianNode = {
   id: string; label: string; hint: string; icon: typeof Fingerprint;
-  x: number; y: number; tone?: "copper" | "ivory";
+  x: number; y: number; tone?: "accent" | "soft";
 };
 
 const NODES: GuardianNode[] = [
   { id: "identity", label: "Identity", hint: "WHO", icon: Fingerprint, x: 17, y: 32 },
-  { id: "people", label: "People", hint: "ACTORS", icon: Users, x: 50, y: 12 },
-  { id: "infrastructure", label: "Infrastructure", hint: "WHERE", icon: Globe2, x: 82, y: 31, tone: "ivory" },
+  { id: "people", label: "People", hint: "ACTORS", icon: Users, x: 50, y: 16 },
+  { id: "infrastructure", label: "Infrastructure", hint: "WHERE", icon: Globe2, x: 82, y: 31, tone: "soft" },
   { id: "applications", label: "Applications", hint: "WHAT", icon: Layers3, x: 78, y: 71 },
-  { id: "policy", label: "Policy", hint: "WHY", icon: Shield, x: 21, y: 73, tone: "copper" },
-  { id: "signals", label: "Signals", hint: "NOW", icon: Zap, x: 50, y: 88, tone: "copper" },
+  { id: "policy", label: "Policy", hint: "WHY", icon: Shield, x: 21, y: 73, tone: "accent" },
+  { id: "signals", label: "Signals", hint: "NOW", icon: Zap, x: 50, y: 84, tone: "accent" },
 ];
 
 const LINKS = [

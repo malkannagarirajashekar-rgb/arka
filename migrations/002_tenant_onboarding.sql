@@ -1,2 +1,0 @@
--- LEGACY MIGRATION: superseded by schema.sql / 003_reference_architecture.sql. Do not run on the new reference schema.
--- Kept for historical context only.

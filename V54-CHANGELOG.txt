@@ -1,0 +1,35 @@
+ARKA V54 — SUPER ADMIN CONTROL PLANE FROM NAVIGATION + WIREFRAME
+
+Implemented directly from the supplied Super Admin Navigation and Super Admin Wireframe.
+
+Navigation:
+- Dashboard
+- Organizations: All Organizations, Create Organization, Workspaces, Tenant Administration
+- Users: All Users, Create User, Invitations, Access
+- Applications: App Catalog, Create App, Versions, App Configuration
+- Integrations: Integration Catalog, Create Integration, Connectors, Configuration
+- Agents: Agent Catalog, Create Agent, Deployments, Agent Configuration
+- Roles & Permissions
+- Platform Configuration
+- System Health
+- Audit Logs
+
+Functionality:
+- Live Supabase tenant, profile, membership, invitation, workspace and audit loading.
+- Global role resolution through existing ARKA RBAC.
+- Organization creation.
+- Organization inspector with user/workspace/admin visibility.
+- User invitation and role assignment using the existing admin-invite-user Edge Function and admin_set_user_role RPC.
+- Platform application/integration/agent registries with create, modify, publish/disable and delete.
+- Agent metadata fields for capabilities, tools, models, permissions, policies, version, deployment and tenant availability.
+- Platform configuration persistence.
+- First-class audit trail for new platform registries and core control-plane mutations.
+- Dashboard metrics and recent activity are database-backed rather than hardcoded wireframe numbers.
+- Full Super Admin sidebar hierarchy and fixed bottom sign-out.
+- Dark/light theme parity is applied to the entire Super Admin control plane.
+
+Database:
+Run:
+supabase/migrations/20260916_0006_arka_platform_control_plane.sql
+
+The migration is additive and creates platform registry/configuration tables. It does not delete existing tenant data.
